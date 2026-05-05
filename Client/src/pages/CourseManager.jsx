@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Button, 
-  Stack, 
-  TextField, 
-  MenuItem, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Stack,
+  TextField,
+  MenuItem,
   Dialog,
   IconButton,
   Chip,
@@ -28,15 +28,18 @@ import {
   AccordionSummary,
   AccordionDetails
 } from '@mui/material';
-import { 
-  Add, 
+import {
+  Add,
   School,
   Close,
   ExpandMore,
   Book,
   Assignment,
   Settings,
-  ChevronRight
+  ChevronRight,
+  Edit,
+  Delete,
+  AccessTime
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -54,13 +57,13 @@ const theme = createTheme({
     h4: { fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em' },
     h6: { fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' },
   },
-  shape: { borderRadius: 12 },
+  shape: { borderRadius: 4 },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
           fontWeight: 900,
-          borderRadius: 8,
+          borderRadius: 4,
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
           padding: '10px 20px',
@@ -70,7 +73,7 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 8,
           boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
           border: '1px solid rgba(0,0,0,0.03)',
         }
@@ -80,7 +83,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 8,
+            borderRadius: 4,
           }
         }
       }
@@ -95,6 +98,9 @@ const CourseManager = () => {
   const [showModuleForm, setShowModuleForm] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [activeModuleId, setActiveModuleId] = useState(null);
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [editingModule, setEditingModule] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
 
   const { data: coursesRes, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses'],
@@ -108,36 +114,86 @@ const CourseManager = () => {
   });
 
   const createCourseMutation = useMutation({
-    mutationFn: courseApi.createCourse,
+    mutationFn: (data) => {
+      if (editingCourse) {
+        return courseApi.updateCourse(editingCourse._id, data);
+      }
+      return courseApi.createCourse(data);
+    },
     onSuccess: () => {
-      toast.success('Course created successfully');
+      toast.success(editingCourse ? 'Course updated' : 'Course created');
       queryClient.invalidateQueries(['courses']);
       setShowCourseForm(false);
+      setEditingCourse(null);
       resetCourse();
     },
-    onError: (err) => toast.error(err.message || 'Failed to create course'),
+    onError: (err) => toast.error(err.message || 'Action failed'),
+  });
+
+  const deleteCourseMutation = useMutation({
+    mutationFn: (id) => courseApi.deleteCourse(id),
+    onSuccess: () => {
+      toast.success('Course track deleted');
+      queryClient.invalidateQueries(['courses']);
+      setSelectedCourse(null);
+    },
+    onError: (err) => toast.error(err.message || 'Delete failed'),
   });
 
   const createModuleMutation = useMutation({
-    mutationFn: (data) => courseApi.createModule(selectedCourse._id, data),
+    mutationFn: (data) => {
+      if (editingModule) {
+        return courseApi.updateModule(editingModule._id, data);
+      }
+      const payload = {
+        ...data,
+        orderIndex: modules.length + 1
+      };
+      return courseApi.createModule(selectedCourse._id, payload);
+    },
     onSuccess: () => {
-      toast.success('Module created successfully');
+      toast.success(editingModule ? 'Module updated' : 'Module created');
       queryClient.invalidateQueries(['modules', selectedCourse?._id]);
       setShowModuleForm(false);
+      setEditingModule(null);
       resetModule();
     },
-    onError: (err) => toast.error(err.message || 'Failed to create module'),
+    onError: (err) => toast.error(err.message || 'Action failed'),
   });
 
   const createTaskMutation = useMutation({
-    mutationFn: (data) => courseApi.createTask(activeModuleId, data),
+    mutationFn: (data) => {
+      if (editingTask) {
+        return courseApi.updateTask(editingTask._id, data);
+      }
+      return courseApi.createTask(activeModuleId, data);
+    },
     onSuccess: () => {
-      toast.success('Task created successfully');
+      toast.success(editingTask ? 'Task updated' : 'Task created');
       queryClient.invalidateQueries(['modules', selectedCourse?._id]);
       setShowTaskForm(false);
+      setEditingTask(null);
       resetTask();
     },
-    onError: (err) => toast.error(err.message || 'Failed to create task'),
+    onError: (err) => toast.error(err.message || 'Action failed'),
+  });
+
+  const deleteModuleMutation = useMutation({
+    mutationFn: (id) => courseApi.deleteModule(id),
+    onSuccess: () => {
+      toast.success('Module deleted');
+      queryClient.invalidateQueries(['modules', selectedCourse?._id]);
+    },
+    onError: (err) => toast.error(err.message || 'Delete failed'),
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: (id) => courseApi.deleteTask(id),
+    onSuccess: () => {
+      toast.success('Task deleted');
+      queryClient.invalidateQueries(['modules', selectedCourse?._id]);
+    },
+    onError: (err) => toast.error(err.message || 'Delete failed'),
   });
 
   const { register: regCourse, handleSubmit: handleCourseSubmit, reset: resetCourse } = useForm();
@@ -161,7 +217,7 @@ const CourseManager = () => {
     <ThemeProvider theme={theme}>
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
-          
+
           {/* Header */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
             <Box>
@@ -169,13 +225,13 @@ const CourseManager = () => {
                 Course Manager
               </Typography>
               <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                Design and refine your master curriculum tracks.
+                Design and refine your master course tracks.
               </Typography>
             </Box>
-            <Button 
-              variant="contained" 
-              startIcon={<Add />} 
-              disableElevation 
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              disableElevation
               onClick={() => setShowCourseForm(true)}
               sx={{ py: 2, px: 4 }}
             >
@@ -185,80 +241,138 @@ const CourseManager = () => {
 
           <Divider sx={{ opacity: 0.1 }} />
 
-          <Grid container spacing={4}>
+          <Grid container spacing={4} sx={{ mt: 1 }}>
             {/* Courses List */}
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={3}>
               <Stack spacing={3}>
-                <Typography variant="h6" color="secondary">Academic Tracks</Typography>
-                <Stack spacing={2}>
-                  {courses.map((course) => (
-                    <Card 
-                      key={course._id} 
-                      onClick={() => setSelectedCourse(course)}
-                      sx={{ 
-                        cursor: 'pointer',
-                        border: selectedCourse?._id === course._id ? '2px solid #E8391D' : '2px solid transparent',
-                        transition: 'all 0.2s',
-                        '&:hover': { transform: 'translateX(8px)', borderColor: selectedCourse?._id === course._id ? '#E8391D' : 'rgba(0,0,0,0.1)' }
-                      }}
-                    >
-                      <CardContent sx={{ p: 3 }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Box>
-                            <Typography variant="subtitle1" fontWeight={900}>{course.name}</Typography>
-                            <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                              {course.durationMonths} MONTHS
-                            </Typography>
-                          </Box>
-                          <ChevronRight sx={{ color: selectedCourse?._id === course._id ? 'primary.main' : 'text.disabled' }} />
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {courses.length === 0 && (
-                    <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 6 }}>
-                      <Typography variant="body2" color="text.secondary">No courses found. Create your first track.</Typography>
-                    </Paper>
-                  )}
-                </Stack>
+                <Typography variant="h6" color="secondary">Course Tracks</Typography>
+                <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 10 } }}>
+                  <Stack spacing={2}>
+                    {courses.map((course) => (
+                      <Card
+                        key={course._id}
+                        onClick={() => setSelectedCourse(course)}
+                        sx={{
+                          cursor: 'pointer',
+                          border: selectedCourse?._id === course._id ? '2px solid #E8391D' : '2px solid transparent',
+                          transition: 'all 0.2s',
+                          '&:hover': { transform: 'translateX(8px)', borderColor: selectedCourse?._id === course._id ? '#E8391D' : 'rgba(0,0,0,0.1)' }
+                        }}
+                      >
+                        <CardContent sx={{ p: 3 }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight={900}>{course.name}</Typography>
+                              <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                                {course.durationMonths} MONTHS
+                              </Typography>
+                            </Box>
+                            <ChevronRight sx={{ color: selectedCourse?._id === course._id ? 'primary.main' : 'text.disabled' }} />
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {courses.length === 0 && (
+                      <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 6 }}>
+                        <Typography variant="body2" color="text.secondary">No courses found. Create your first course track.</Typography>
+                      </Paper>
+                    )}
+                  </Stack>
+                </Box>
               </Stack>
             </Grid>
 
             {/* Course Detail / Modules */}
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12} md={9}>
               {selectedCourse ? (
                 <Stack spacing={4}>
-                  <Box sx={{ p: 4, bgcolor: 'secondary.main', color: 'white', borderRadius: 8, position: 'relative', overflow: 'hidden' }}>
+                  <Box sx={{
+                    p: 4,
+                    bgcolor: 'secondary.main',
+                    color: 'white',
+                    borderRadius: 2,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&:hover .course-header-actions': { opacity: 1 }
+                  }}>
                     <Box sx={{ position: 'relative', zIndex: 1 }}>
                       <Typography variant="h5" fontWeight={900} gutterBottom>{selectedCourse.name}</Typography>
                       <Typography variant="body2" sx={{ opacity: 0.8, maxWidth: '80%' }}>{selectedCourse.description}</Typography>
                     </Box>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      className="course-header-actions"
+                      sx={{
+                        opacity: 0,
+                        transition: 'opacity 0.2s',
+                        position: 'absolute',
+                        top: 24,
+                        right: 24,
+                        zIndex: 2
+                      }}
+                    >
+                      <IconButton size="small" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.1)' }} onClick={() => {
+                        setEditingCourse(selectedCourse);
+                        resetCourse(selectedCourse);
+                        setShowCourseForm(true);
+                      }}>
+                        <Edit sx={{ fontSize: 18 }} />
+                      </IconButton>
+                      <IconButton size="small" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.1)' }} onClick={() => {
+                        if (confirm('Delete this course track?')) deleteCourseMutation.mutate(selectedCourse._id);
+                      }}>
+                        <Delete sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Stack>
                     <School sx={{ position: 'absolute', right: -20, bottom: -20, fontSize: 180, opacity: 0.05, transform: 'rotate(-15deg)' }} />
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Stack direction="row" spacing={24} alignItems="center">
                     <Typography variant="h6" color="secondary">Modules & Learning Path</Typography>
-                    <Button 
-                      variant="outlined" 
-                      size="small" 
-                      startIcon={<Add />} 
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Add />}
                       onClick={() => setShowModuleForm(true)}
+                      sx={{ borderRadius: 2 }}
                     >
                       Add Module
                     </Button>
-                  </Box>
+                  </Stack>
 
                   <Stack spacing={2}>
                     {modulesLoading ? (
                       <Box sx={{ textAlign: 'center', py: 4 }}><CircularProgress size={24} /></Box>
                     ) : modules.map((module, index) => (
-                      <Accordion key={module._id} sx={{ borderRadius: '12px !important', '&:before': { display: 'none' }, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', boxShadow: 'none', '&.Mui-expanded': { border: '2px solid #E8391D' } }}>
+                      <Accordion key={module._id} sx={{
+                        borderRadius: '4px !important',
+                        '&:before': { display: 'none' },
+                        overflow: 'hidden',
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        boxShadow: 'none',
+                        '&.Mui-expanded': { border: '2px solid #E8391D' },
+                        '&:hover .module-actions': { opacity: 1 }
+                      }}>
                         <AccordionSummary expandIcon={<ExpandMore />}>
-                          <Stack direction="row" spacing={2} alignItems="center">
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
                             <Box sx={{ width: 32, height: 32, bgcolor: 'action.hover', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: 'primary.main' }}>
                               {index + 1}
                             </Box>
-                            <Typography fontWeight={900}>{module.title}</Typography>
+                            <Typography fontWeight={900} sx={{ flexGrow: 1 }}>{module.name}</Typography>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mr: 2, color: 'text.secondary' }}>
+                              <AccessTime sx={{ fontSize: 16 }} />
+                              <Typography variant="caption" fontWeight={700}>{module.durationWeeks} WEEKS</Typography>
+                            </Stack>
+                            <Stack direction="row" className="module-actions" sx={{ opacity: 0, transition: 'opacity 0.2s' }}>
+                              <IconButton size="small" color="primary" onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingModule(module);
+                                resetModule(module);
+                                setShowModuleForm(true);
+                              }}><Edit sx={{ fontSize: 18 }} /></IconButton>
+                              <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); if (confirm('Delete module?')) deleteModuleMutation.mutate(module._id); }}><Delete sx={{ fontSize: 18 }} /></IconButton>
+                            </Stack>
                           </Stack>
                         </AccordionSummary>
                         <AccordionDetails sx={{ px: 4, pb: 4 }}>
@@ -268,10 +382,10 @@ const CourseManager = () => {
                             <Box>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                 <Typography variant="caption" fontWeight={900} color="text.secondary">TASKS & ASSIGNMENTS</Typography>
-                                <Button 
-                                  size="small" 
-                                  variant="text" 
-                                  startIcon={<Add sx={{ fontSize: 16 }} />} 
+                                <Button
+                                  size="small"
+                                  variant="text"
+                                  startIcon={<Add sx={{ fontSize: 16 }} />}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setActiveModuleId(module._id);
@@ -284,12 +398,30 @@ const CourseManager = () => {
                               </Box>
                               <Stack spacing={1}>
                                 {module.tasks?.map((task) => (
-                                  <Paper key={task._id} elevation={0} sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Paper key={task._id} elevation={0} sx={{
+                                    p: 2,
+                                    bgcolor: 'action.hover',
+                                    borderRadius: 3,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    '&:hover .task-actions': { opacity: 1 }
+                                  }}>
                                     <Stack direction="row" spacing={2} alignItems="center">
                                       <Assignment sx={{ fontSize: 18, color: 'text.secondary' }} />
                                       <Typography variant="body2" fontWeight={700}>{task.title}</Typography>
                                     </Stack>
-                                    <Chip label={task.type} size="small" sx={{ fontWeight: 900, fontSize: '0.6rem' }} />
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                      <Box className="task-actions" sx={{ opacity: 0, transition: 'opacity 0.2s' }}>
+                                        <IconButton size="small" color="primary" onClick={() => {
+                                          setEditingTask(task);
+                                          resetTask(task);
+                                          setShowTaskForm(true);
+                                        }}><Edit sx={{ fontSize: 16 }} /></IconButton>
+                                        <IconButton size="small" color="error" onClick={() => { if (confirm('Delete task?')) deleteTaskMutation.mutate(task._id); }}><Delete sx={{ fontSize: 16 }} /></IconButton>
+                                      </Box>
+                                      <Chip label={task.type} size="small" sx={{ fontWeight: 900, fontSize: '0.6rem' }} />
+                                    </Stack>
                                   </Paper>
                                 ))}
                                 {(!module.tasks || module.tasks.length === 0) && (
@@ -310,22 +442,25 @@ const CourseManager = () => {
                   </Stack>
                 </Stack>
               ) : (
-                <Box sx={{ 
-                  height: '60vh', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  gap: 3, 
-                  bgcolor: 'white', 
-                  borderRadius: 4, 
-                  border: '2px dashed rgba(0,0,0,0.05)' 
+                <Box sx={{
+                  height: '60vh',
+                  width: '700px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  gap: 3,
+                  bgcolor: 'white',
+                  borderRadius: 2,
+                  border: '2px dashed rgba(0,0,0,0.1)',
+                  px: 4
                 }}>
                   <Box sx={{ p: 3, bgcolor: 'action.hover', borderRadius: '50%' }}>
                     <School sx={{ fontSize: 60, color: 'text.disabled' }} />
                   </Box>
                   <Typography variant="h6" color="text.disabled" fontWeight={800} sx={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                    Select a track to manage curriculum
+                    Select a course track to manage
                   </Typography>
                 </Box>
               )}
@@ -333,55 +468,54 @@ const CourseManager = () => {
           </Grid>
 
           {/* Dialogs */}
-          <Dialog open={showCourseForm} onClose={() => setShowCourseForm(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+          <Dialog open={showCourseForm} onClose={() => { setShowCourseForm(false); setEditingCourse(null); resetCourse(); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
             <Box sx={{ p: 4 }}>
-              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>Create New Track</Typography>
+              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>{editingCourse ? 'Edit Course Track' : 'Add Course Track'}</Typography>
               <Box component="form" onSubmit={handleCourseSubmit((data) => createCourseMutation.mutate(data))} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <TextField fullWidth label="Track Name" placeholder="e.g. MERN Full Stack" {...regCourse('name', { required: true })} />
-                <TextField fullWidth type="number" label="Duration (Months)" {...regCourse('durationMonths', { required: true })} />
-                <TextField fullWidth multiline rows={4} label="Description" placeholder="What is this track about?" {...regCourse('description', { required: true })} />
+                <TextField fullWidth label="Track Name" placeholder="e.g. Full Stack Development" {...regCourse('name', { required: true })} />
+                <TextField fullWidth type="number" label="Duration (Months)" {...regCourse('durationMonths', { required: true, min: 1 })} />
+                <TextField fullWidth multiline rows={4} label="Description" placeholder="Briefly describe the learning path..." {...regCourse('description', { required: true })} />
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-                  <Button onClick={() => setShowCourseForm(false)} color="secondary">Cancel</Button>
+                  <Button onClick={() => { setShowCourseForm(false); setEditingCourse(null); resetCourse(); }} color="secondary">Cancel</Button>
                   <Button type="submit" variant="contained" disableElevation disabled={createCourseMutation.isPending}>
-                    {createCourseMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Create Track'}
+                    {createCourseMutation.isPending ? <CircularProgress size={24} color="inherit" /> : (editingCourse ? 'Update Track' : 'Create Track')}
                   </Button>
                 </Stack>
               </Box>
             </Box>
           </Dialog>
 
-          <Dialog open={showModuleForm} onClose={() => setShowModuleForm(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+          <Dialog open={showModuleForm} onClose={() => { setShowModuleForm(false); setEditingModule(null); resetModule(); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
             <Box sx={{ p: 4 }}>
-              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>Add Module</Typography>
+              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>{editingModule ? 'Edit Module' : 'Add Module'}</Typography>
               <Box component="form" onSubmit={handleModuleSubmit((data) => createModuleMutation.mutate(data))} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <TextField fullWidth label="Module Title" placeholder="e.g. Introduction to React" {...regModule('title', { required: true })} />
-                <TextField fullWidth multiline rows={3} label="Module Description" {...regModule('description', { required: true })} />
+                <TextField fullWidth label="Module Name" placeholder="e.g. Introduction to React" {...regModule('name', { required: true })} />
+                <TextField fullWidth type="number" label="Duration (Weeks)" {...regModule('durationWeeks', { required: true, min: 1 })} />
+                <TextField fullWidth multiline rows={3} label="Module Description" {...regModule('description')} />
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-                  <Button onClick={() => setShowModuleForm(false)} color="secondary">Cancel</Button>
+                  <Button onClick={() => { setShowModuleForm(false); setEditingModule(null); resetModule(); }} color="secondary">Cancel</Button>
                   <Button type="submit" variant="contained" disableElevation disabled={createModuleMutation.isPending}>
-                    {createModuleMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Add Module'}
+                    {createModuleMutation.isPending ? <CircularProgress size={24} color="inherit" /> : (editingModule ? 'Update Module' : 'Add Module')}
                   </Button>
                 </Stack>
               </Box>
             </Box>
           </Dialog>
 
-          <Dialog open={showTaskForm} onClose={() => setShowTaskForm(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+          <Dialog open={showTaskForm} onClose={() => { setShowTaskForm(false); setEditingTask(null); resetTask(); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
             <Box sx={{ p: 4 }}>
-              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>Add Task</Typography>
+              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>{editingTask ? 'Edit Task' : 'Add Task'}</Typography>
               <Box component="form" onSubmit={handleTaskSubmit((data) => createTaskMutation.mutate(data))} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField fullWidth label="Task Title" placeholder="e.g. Build a Todo List" {...regTask('title', { required: true })} />
-                <TextField select fullWidth label="Task Type" defaultValue="assignment" {...regTask('type', { required: true })}>
-                  <MenuItem value="assignment">Assignment</MenuItem>
-                  <MenuItem value="project">Project</MenuItem>
-                  <MenuItem value="quiz">Quiz</MenuItem>
-                  <MenuItem value="reading">Reading</MenuItem>
+                <TextField select fullWidth label="Task Type" {...regTask('type', { required: true })}>
+                  <MenuItem value="technical">Technical</MenuItem>
+                  <MenuItem value="personal">Personal / Soft Skills</MenuItem>
                 </TextField>
                 <TextField fullWidth multiline rows={3} label="Task Description" {...regTask('description', { required: true })} />
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-                  <Button onClick={() => setShowTaskForm(false)} color="secondary">Cancel</Button>
+                  <Button onClick={() => { setShowTaskForm(false); setEditingTask(null); resetTask(); }} color="secondary">Cancel</Button>
                   <Button type="submit" variant="contained" disableElevation disabled={createTaskMutation.isPending}>
-                    {createTaskMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Add Task'}
+                    {createTaskMutation.isPending ? <CircularProgress size={24} color="inherit" /> : (editingTask ? 'Update Task' : 'Add Task')}
                   </Button>
                 </Stack>
               </Box>

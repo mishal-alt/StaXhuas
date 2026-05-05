@@ -14,10 +14,16 @@ router.use(authMiddleware);
 router.post('/', requireRole(ROLES.ADMIN), validate(createCourseSchema), courseController.createCourse);
 router.get('/', courseController.getCourses); // Any logged in user can view courses
 router.get('/:id', courseController.getCourse);
+router.put('/:id', requireRole(ROLES.ADMIN), courseController.updateCourse);
+router.delete('/:id', requireRole(ROLES.ADMIN), courseController.deleteCourse);
 
 router.post('/:id/modules', requireRole(ROLES.ADMIN), validate(createModuleSchema), courseController.createModule);
 router.get('/:id/modules', courseController.getModules);
+router.put('/modules/:id', requireRole(ROLES.ADMIN), courseController.updateModule);
+router.delete('/modules/:id', requireRole(ROLES.ADMIN), courseController.deleteModule);
 
 router.post('/modules/:moduleId/tasks', requireRole(ROLES.ADMIN), validate(createTaskSchema), courseController.createTask);
+router.put('/tasks/:taskId', requireRole(ROLES.ADMIN), courseController.updateTask);
+router.delete('/tasks/:taskId', requireRole(ROLES.ADMIN), courseController.deleteTask);
 
 export default router;
