@@ -1,0 +1,52 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+import { env } from './config/env.js';
+import routes from './routes/index.js';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+
+const app = express();
+
+// Security Middlewares
+app.use(helmet());
+
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:5174', env.clientUrl],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+// Rate limiting (Basic)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+});
+app.use('/api', limiter);
+
+// Request Parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Logging
+if (env.nodeEnv === 'development') {
+  app.use(morgan('dev'));
+}
+
+// Routes
+app.use('/api', routes);
+
+// Base route for health check
+app.get('/', (req, res) => {
+  res.status(200).json({ success: true, message: 'Staxhaus IMA API is running' });
+});
+
+// 404 Handler
+app.use(notFoundHandler);
+
+// Global Error Handler
+app.use(errorHandler);
+
+export default app;
