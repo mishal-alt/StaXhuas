@@ -246,7 +246,7 @@ const CourseManager = () => {
             <Grid item xs={12} md={3}>
               <Stack spacing={3}>
                 <Typography variant="h6" color="secondary">Course Tracks</Typography>
-                <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,0.1)', borderRadius: 10 } }}>
+                <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 0, '&::-webkit-scrollbar': { display: 'none' }, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
                   <Stack spacing={2}>
                     {courses.map((course) => (
                       <Card
