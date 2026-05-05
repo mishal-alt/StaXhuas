@@ -77,19 +77,52 @@ const ScrumManagement = () => {
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
           
-          {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
-            <Box>
-              <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
+          {/* Header - Brush Stroke Style */}
+          <Box sx={{ 
+            position: 'relative', 
+            p: 6, 
+            borderRadius: '30px 150px 40px 120px', 
+            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+            color: 'white',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 4,
+            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-10%',
+              width: '120%',
+              height: '200%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+              pointerEvents: 'none'
+            }
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
                 Scrum Tracker
               </Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
                 Mandatory daily progress sync and blocker tracking per batch.
               </Typography>
             </Box>
+            
             <Chip 
-              label="MAY 30, 2026" 
-              sx={{ fontWeight: 900, px: 2, py: 3, borderRadius: 3, bgcolor: 'secondary.main', color: 'white' }} 
+              label="SYNC DATE: MAY 30, 2026" 
+              sx={{ 
+                bgcolor: 'white', 
+                color: '#E8391D', 
+                fontWeight: 900, 
+                px: 3, 
+                py: 3, 
+                borderRadius: '12px 32px 12px 32px',
+                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                zIndex: 1
+              }} 
             />
           </Box>
 

@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Button, 
-  Stack, 
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -21,11 +21,11 @@ import {
   ThemeProvider,
   createTheme
 } from '@mui/material';
-import { 
-  Send, 
-  Refresh, 
-  Cancel, 
-  Mail, 
+import {
+  Send,
+  Refresh,
+  Cancel,
+  Mail,
   PersonAdd,
   CheckCircle,
   Schedule,
@@ -88,19 +88,57 @@ const Invitations = () => {
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
-        <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          
-          {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <Box>
-              <Typography variant="h4" color="secondary" gutterBottom>
+        <Box sx={{ py: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
+
+          {/* Header - Brush Stroke Style */}
+          <Box sx={{ 
+            position: 'relative', 
+            p: 4, 
+            borderRadius: '30px 150px 40px 120px', 
+            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+            color: 'white',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 4,
+            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-10%',
+              width: '120%',
+              height: '200%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+              pointerEvents: 'none'
+            }
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
                 Student Onboarding
               </Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
                 Issue new invitations and track your student setup progress.
               </Typography>
             </Box>
-            <Button variant="contained" startIcon={<Send />} disableElevation>
+            <Button 
+              variant="contained" 
+              startIcon={<Send />}
+              sx={{ 
+                bgcolor: 'white', 
+                color: '#E8391D',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.9)', transform: 'translateY(-2px)' },
+                px: 5,
+                py: 2,
+                borderRadius: '16px 40px 16px 40px',
+                fontWeight: 900,
+                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                zIndex: 1
+              }}
+            >
               New Invite
             </Button>
           </Box>
@@ -110,45 +148,45 @@ const Invitations = () => {
             <Grid item xs={12} md={4}>
               <Card sx={{ borderLeft: '6px solid #E8391D' }}>
                 <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <Box>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                        PENDING INVITES
-                      </Typography>
-                      <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>08</Typography>
-                   </Box>
-                   <Box sx={{ p: 2, bgcolor: 'rgba(232, 57, 29, 0.05)', color: '#E8391D', borderRadius: 4 }}>
-                      <Schedule fontSize="large" />
-                   </Box>
+                  <Box>
+                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
+                      PENDING INVITES
+                    </Typography>
+                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>08</Typography>
+                  </Box>
+                  <Box sx={{ p: 2, bgcolor: 'rgba(232, 57, 29, 0.05)', color: '#E8391D', borderRadius: 4 }}>
+                    <Schedule fontSize="large" />
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12} md={4}>
               <Card sx={{ borderLeft: '6px solid #2e7d32' }}>
                 <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <Box>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                        ACCEPTED (MONTH)
-                      </Typography>
-                      <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>24</Typography>
-                   </Box>
-                   <Box sx={{ p: 2, bgcolor: 'rgba(46, 125, 50, 0.05)', color: '#2e7d32', borderRadius: 4 }}>
-                      <CheckCircle fontSize="large" />
-                   </Box>
+                  <Box>
+                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
+                      ACCEPTED (MONTH)
+                    </Typography>
+                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>24</Typography>
+                  </Box>
+                  <Box sx={{ p: 2, bgcolor: 'rgba(46, 125, 50, 0.05)', color: '#2e7d32', borderRadius: 4 }}>
+                    <CheckCircle fontSize="large" />
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12} md={4}>
               <Card sx={{ borderLeft: '6px solid #9e9e9e' }}>
                 <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <Box>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                        EXPIRED LINKS
-                      </Typography>
-                      <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>02</Typography>
-                   </Box>
-                   <Box sx={{ p: 2, bgcolor: 'rgba(0, 0, 0, 0.05)', color: '#9e9e9e', borderRadius: 4 }}>
-                      <History fontSize="large" />
-                   </Box>
+                  <Box>
+                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
+                      EXPIRED LINKS
+                    </Typography>
+                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>02</Typography>
+                  </Box>
+                  <Box sx={{ p: 2, bgcolor: 'rgba(0, 0, 0, 0.05)', color: '#9e9e9e', borderRadius: 4 }}>
+                    <History fontSize="large" />
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
@@ -188,15 +226,15 @@ const Invitations = () => {
                         <Typography variant="caption" fontWeight={900} color="text.secondary">{invite.sentAt}</Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <Chip 
-                          label={invite.status} 
-                          size="small" 
-                          sx={{ 
-                            fontWeight: 900, 
-                            bgcolor: `${invite.color}20`, 
+                        <Chip
+                          label={invite.status}
+                          size="small"
+                          sx={{
+                            fontWeight: 900,
+                            bgcolor: `${invite.color}20`,
                             color: invite.color,
                             border: `1px solid ${invite.color}40`
-                          }} 
+                          }}
                         />
                       </TableCell>
                       <TableCell align="right">

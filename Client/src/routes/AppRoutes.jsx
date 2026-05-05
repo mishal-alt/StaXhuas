@@ -9,6 +9,7 @@ import BatchDetail from '../pages/BatchDetail';
 import AttendanceAndLeaves from '../pages/AttendanceAndLeaves';
 import ScrumAndInterviews from '../pages/ScrumAndInterviews';
 import StaffManagement from '../pages/StaffManagement';
+import StaffProfile from '../pages/StaffProfile';
 import StudentAcademics from '../pages/StudentAcademics';
 import StudentTasks from '../pages/StudentTasks';
 import Profile from '../pages/Profile';
@@ -56,6 +57,7 @@ const AppRoutes = () => {
       <Route path="/interviews/:id" element={<ProtectedRoute allowedRoles={[ROLES.INTERVIEWER]}><InterviewDetail /></ProtectedRoute>} />
 
       <Route path="/staff" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><StaffManagement /></ProtectedRoute>} />
+      <Route path="/staff/profile/:id" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><StaffProfile /></ProtectedRoute>} />
       <Route path="/course-management" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><CourseManager /></ProtectedRoute>} />
       <Route path="/tasks" element={<ProtectedRoute allowedRoles={[ROLES.STUDENT]}><StudentTasks /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

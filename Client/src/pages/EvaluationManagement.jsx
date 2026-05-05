@@ -1,14 +1,14 @@
 import React from 'react';
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Button, 
-  Stack, 
-  Chip, 
-  Avatar, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Stack,
+  Chip,
+  Avatar,
   Divider,
   Paper,
   Table,
@@ -20,13 +20,13 @@ import {
   ThemeProvider,
   createTheme
 } from '@mui/material';
-import { 
-  Assessment, 
-  Person, 
-  Star, 
-  ChevronRight, 
-  Schedule, 
-  CheckCircle, 
+import {
+  Assessment,
+  Person,
+  Star,
+  ChevronRight,
+  Schedule,
+  CheckCircle,
   Info,
   Assignment
 } from '@mui/icons-material';
@@ -81,15 +81,40 @@ const EvaluationManagement = () => {
     <ThemeProvider theme={theme}>
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
-          
-          {/* Header */}
-          <Box>
-            <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
-              Module Evaluations
-            </Typography>
-            <Typography variant="body1" color="text.secondary" fontWeight={600}>
-              Schedule interviews, assign interviewers, and record final scores.
-            </Typography>
+
+          {/* Header - Brush Stroke Style */}
+          <Box sx={{ 
+            position: 'relative', 
+            p: 6, 
+            borderRadius: '30px 150px 40px 120px', 
+            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+            color: 'white',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 4,
+            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-10%',
+              width: '120%',
+              height: '200%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+              pointerEvents: 'none'
+            }
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                Module Evaluations
+              </Typography>
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
+                Schedule interviews, assign interviewers, and record final scores.
+              </Typography>
+            </Box>
           </Box>
 
           {/* Stats Grid */}
@@ -104,8 +129,8 @@ const EvaluationManagement = () => {
                 <Card>
                   <CardContent sx={{ p: 4 }}>
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                       <Box sx={{ color: stat.color }}>{stat.icon}</Box>
-                       <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>{stat.label.toUpperCase()}</Typography>
+                      <Box sx={{ color: stat.color }}>{stat.icon}</Box>
+                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>{stat.label.toUpperCase()}</Typography>
                     </Stack>
                     <Typography variant="h3" fontWeight={900} sx={{ fontFamily: 'Outfit', color: stat.color }}>{stat.count}</Typography>
                   </CardContent>
@@ -143,11 +168,11 @@ const EvaluationManagement = () => {
                         </Stack>
                       </TableCell>
                       <TableCell align="center">
-                        <Chip 
-                          label={evalItem.status} 
-                          size="small" 
+                        <Chip
+                          label={evalItem.status}
+                          size="small"
                           color={evalItem.status === 'Completed' ? 'success' : evalItem.status === 'Scheduled' ? 'info' : 'error'}
-                          sx={{ fontWeight: 900, borderRadius: 2 }} 
+                          sx={{ fontWeight: 900, borderRadius: 2 }}
                         />
                       </TableCell>
                       <TableCell>

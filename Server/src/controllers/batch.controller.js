@@ -21,3 +21,12 @@ export const updateConfig = asyncHandler(async (req, res) => {
   const config = await batchService.updateBatchConfig(req.user, req.params.id, req.body);
   return apiResponse(res, 200, 'Batch configuration updated successfully', config);
 });
+export const updateBatch = asyncHandler(async (req, res) => {
+  const batch = await batchService.updateBatch(req.user, req.params.id, req.body);
+  return apiResponse(res, 200, 'Batch updated successfully', batch);
+});
+
+export const deleteBatch = asyncHandler(async (req, res) => {
+  await batchService.deleteBatch(req.user, req.params.id);
+  return apiResponse(res, 200, 'Batch deleted successfully');
+});

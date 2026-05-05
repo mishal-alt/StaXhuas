@@ -101,12 +101,36 @@ const AttendanceAndLeaves = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
           
           {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 4 }}>
-            <Box>
-              <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
+          {/* Header - Brush Stroke Style */}
+          <Box sx={{ 
+            position: 'relative', 
+            p: 6, 
+            borderRadius: '30px 150px 40px 120px', 
+            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+            color: 'white',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 4,
+            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-10%',
+              width: '120%',
+              height: '200%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+              pointerEvents: 'none'
+            }
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
                 Daily Operations
               </Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
                 Manage attendance and leaves for your cohorts.
               </Typography>
             </Box>
@@ -116,8 +140,34 @@ const AttendanceAndLeaves = () => {
               label="Select Batch"
               value={selectedBatch}
               onChange={(e) => setSelectedBatch(e.target.value)}
-              sx={{ width: 300 }}
-              InputProps={{ sx: { borderRadius: 4, fontWeight: 900 } }}
+              variant="outlined"
+              sx={{ 
+                width: 300,
+                zIndex: 1,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'white',
+                  borderRadius: '12px 32px 12px 32px', // Matching organic feel
+                  height: 56,
+                  '& fieldset': { border: 'none' },
+                  '&:hover fieldset': { border: 'none' },
+                  '&.Mui-focused fieldset': { border: 'none' },
+                  boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                },
+                '& .MuiInputLabel-root': { 
+                  color: 'rgba(255,255,255,0.8)', 
+                  fontWeight: 800,
+                  '&.Mui-focused': { color: 'white' },
+                  '&.MuiInputLabel-shrink': { 
+                    color: 'white', 
+                    transform: 'translate(14px, -28px) scale(0.75)',
+                  }
+                },
+                '& .MuiSelect-select': {
+                  fontWeight: 900,
+                  py: 1.5,
+                  color: '#1E2126'
+                }
+              }}
             >
               {batches.map(b => (
                 <MenuItem key={b._id} value={b._id} sx={{ fontWeight: 800 }}>{b.name}</MenuItem>

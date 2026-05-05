@@ -9,5 +9,8 @@ router.use(protect);
 router.use(restrictTo(ROLES.ADMIN));
 
 router.get('/', userController.getUsersByRole);
+router.get('/:id', userController.getUserById);
+router.patch('/:id', userController.updateUser);
+router.delete('/:id', userController.deleteUser);
 
 export default router;

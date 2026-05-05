@@ -97,16 +97,38 @@ const Students = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
           
           {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ 
+            bgcolor: '#E8391D', 
+            p: 4, 
+            borderRadius: 6, 
+            color: 'white',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 4,
+            boxShadow: '0 8px 32px rgba(232, 57, 29, 0.15)'
+          }}>
             <Box>
-              <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
+              <Typography variant="h4" color="inherit" sx={{ fontSize: '2.5rem' }}>
                 Student Roster
               </Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600 }}>
                 Manage and monitor students across your assigned batches.
               </Typography>
             </Box>
-            <Button variant="contained" startIcon={<PersonAdd />} disableElevation>
+            <Button 
+              variant="contained" 
+              startIcon={<PersonAdd />}
+              sx={{ 
+                bgcolor: 'white', 
+                color: '#E8391D',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                px: 4,
+                py: 1.5,
+                borderRadius: 4
+              }}
+            >
               Invite Student
             </Button>
           </Box>

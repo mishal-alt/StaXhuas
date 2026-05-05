@@ -1,33 +1,39 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Stack, 
-  Button, 
-  Chip, 
+import { useQuery } from '@tanstack/react-query';
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Stack,
+  Button,
+  Chip,
   LinearProgress,
   IconButton,
   Avatar,
   Divider,
   Paper,
   ThemeProvider,
-  createTheme
+  createTheme,
+  CircularProgress
 } from '@mui/material';
-import { 
-  CalendarToday, 
-  People, 
-  Assignment, 
-  CheckCircle, 
-  Schedule, 
+import {
+  CalendarToday,
+  People,
+  Assignment,
+  CheckCircle,
+  Schedule,
   Info,
   ChevronRight,
   TrendingUp,
-  Bolt
+  Bolt,
+  Layers
 } from '@mui/icons-material';
+
+import * as batchApi from '../../api/batches.api';
+import * as leaveApi from '../../api/leaves.api';
 
 // Custom theme to match Staxhaus brand
 const theme = createTheme({
@@ -69,11 +75,28 @@ const theme = createTheme({
 const FacilitatorDashboard = ({ user }) => {
   const navigate = useNavigate();
 
-  const DUMMY_BATCHES = [
-    { id: '1', name: 'MERN-B1', students: 12, nextScrum: '10:00 AM', attendance: '92%', progress: 'Module 4', fill: 45 },
-    { id: '2', name: 'MERN-B2', students: 15, nextScrum: '11:30 AM', attendance: '88%', progress: 'Module 1', fill: 15 },
-    { id: '3', name: 'FS-JAVA-02', students: 8, nextScrum: '02:00 PM', attendance: '95%', progress: 'Module 8', fill: 85 },
-  ];
+  const { data: batchesRes, isLoading: batchesLoading } = useQuery({
+    queryKey: ['facilitatorBatches'],
+    queryFn: batchApi.getBatches,
+  });
+
+  const { data: leavesRes } = useQuery({
+    queryKey: ['facilitatorLeaves'],
+    queryFn: () => leaveApi ? leaveApi.getLeaves() : Promise.resolve({ data: [] }),
+    enabled: !!user
+  });
+
+  if (batchesLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
+        <CircularProgress color="primary" thickness={6} />
+      </Box>
+    );
+  }
+
+  const batches = batchesRes?.data || [];
+  const totalStudents = batches.reduce((sum, b) => sum + (b.students?.length || 0), 0);
+  const pendingLeaves = leavesRes?.data?.filter(l => l.status === 'pending').length || 0;
 
   const QUICK_ACTIONS = [
     { label: 'Mark Attendance', path: '/attendance', icon: <CheckCircle />, color: '#2e7d32' },
@@ -84,36 +107,74 @@ const FacilitatorDashboard = ({ user }) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        
-        {/* Welcome Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
-          <Box>
-            <Typography variant="h4" color="secondary" gutterBottom sx={{ fontSize: '2.5rem' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+
+        {/* Welcome Header - Brush Stroke Style */}
+        <Box sx={{
+          position: 'relative',
+          p: 6,
+          borderRadius: '30px 150px 40px 120px',
+          background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 4,
+          boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            left: '-10%',
+            width: '120%',
+            height: '200%',
+            background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+            pointerEvents: 'none'
+          }
+        }}>
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
               Facilitator Dashboard
             </Typography>
-            <Typography variant="body1" color="text.secondary" fontWeight={600}>
-              Welcome back, <span style={{ color: '#E8391D' }}>{user?.name}</span>. Here's your mission for today.
+            <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
+              Welcome back, <b>{user?.name}</b>. Here's your mission for today.
             </Typography>
           </Box>
-          <Chip 
-            icon={<CalendarToday sx={{ color: '#E8391D !important' }} />} 
-            label="MAY 30, 2026" 
-            sx={{ fontWeight: 900, px: 2, py: 3, borderRadius: 3, bgcolor: 'white', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }} 
+          <Chip
+            icon={<CalendarToday sx={{ color: '#E8391D !important' }} />}
+            label={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}
+            sx={{
+              fontWeight: 900,
+              px: 3,
+              py: 3,
+              borderRadius: '12px 32px 12px 32px',
+              bgcolor: 'white',
+              color: '#E8391D',
+              boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+              zIndex: 1
+            }}
           />
         </Box>
 
         {/* Stats Section */}
-        <Grid container spacing={3}>
+        <Grid container spacing={3} justifyContent="center">
           {[
-            { label: 'Active Batches', value: '03', icon: <Bolt />, color: '#E8391D' },
-            { label: 'Total Students', value: '35', icon: <People />, color: '#1976d2' },
-            { label: 'Pending Leaves', value: '05', icon: <Info />, color: '#ed6c02' },
-            { label: 'Avg Attendance', value: '92%', icon: <CheckCircle />, color: '#2e7d32' },
+            { label: 'Active Batches', value: batches.filter(b => b.status !== 'completed').length, icon: <Bolt />, color: '#E8391D' },
+            { label: 'Total Students', value: totalStudents, icon: <People />, color: '#1976d2' },
+            { label: 'Pending Leaves', value: pendingLeaves, icon: <Info />, color: '#ed6c02' },
+            { label: 'Network Health', value: '98%', icon: <TrendingUp />, color: '#2e7d32' },
           ].map((stat, i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Card sx={{ transition: 'transform 0.3s', '&:hover': { transform: 'translateY(-5px)' } }}>
-                <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Grid item xs={12} sm={3} md={3} lg={3} key={i}>
+              <Card sx={{
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                borderRadius: '24px',
+                border: '1px solid rgba(0,0,0,0.05)',
+                height: '100%'
+              }}>
+                <CardContent sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
                     <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
                       {stat.label}
@@ -146,16 +207,16 @@ const FacilitatorDashboard = ({ user }) => {
                           <Typography variant="h5" fontWeight={900}>{batch.name}</Typography>
                           <Chip label="LIVE" size="small" color="success" sx={{ fontWeight: 900, borderRadius: 2 }} />
                         </Box>
-                        
+
                         <Stack spacing={2}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography variant="caption" fontWeight={900} color="text.secondary">CURRICULUM SYNC</Typography>
                             <Typography variant="caption" fontWeight={900}>{batch.progress}</Typography>
                           </Box>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={batch.fill} 
-                            sx={{ height: 8, borderRadius: 4, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }} 
+                          <LinearProgress
+                            variant="determinate"
+                            value={batch.fill}
+                            sx={{ height: 8, borderRadius: 4, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }}
                           />
                           <Grid container spacing={2} sx={{ mt: 2 }}>
                             <Grid item xs={6}>
@@ -188,15 +249,15 @@ const FacilitatorDashboard = ({ user }) => {
                 <Grid container spacing={2}>
                   {QUICK_ACTIONS.map((action, i) => (
                     <Grid item xs={6} key={i}>
-                      <Button 
-                        fullWidth 
-                        variant="outlined" 
+                      <Button
+                        fullWidth
+                        variant="outlined"
                         color="secondary"
                         onClick={() => navigate(action.path)}
-                        sx={{ 
-                          height: 120, 
-                          flexDirection: 'column', 
-                          gap: 1, 
+                        sx={{
+                          height: 120,
+                          flexDirection: 'column',
+                          gap: 1,
                           borderColor: 'rgba(0,0,0,0.05)',
                           bgcolor: 'white',
                           '&:hover': { bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main' }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
-import { Logo  } from "@/components/ui/logo";
+import { Logo } from "@/components/ui/logo";
 
 const AppShell = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -11,11 +11,11 @@ const AppShell = ({ children }) => {
   return (
     <div className="flex h-screen overflow-hidden bg-brand-light">
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Mobile Header */}
         <header className="h-16 flex items-center justify-between px-4 bg-white border-b border-gray-200 md:hidden z-30">
-          <button 
+          <button
             onClick={toggleSidebar}
             className="p-2 text-brand-charcoal hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-orange"
           >

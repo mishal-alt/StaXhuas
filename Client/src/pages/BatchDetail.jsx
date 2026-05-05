@@ -163,106 +163,130 @@ const BatchDetail = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
 
           {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 4 }}>
-            <Box>
+          {/* Header - Brush Stroke Style */}
+          <Box sx={{
+            position: 'relative',
+            p: 6,
+            borderRadius: '30px 150px 40px 120px',
+            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 4,
+            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-10%',
+              width: '120%',
+              height: '200%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+              pointerEvents: 'none'
+            }
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>{batch?.name}</Typography>
-                <Chip label="MANAGED BATCH" size="small" color="primary" sx={{ fontWeight: 900, borderRadius: 2 }} />
+                <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>{batch?.name}</Typography>
+                <Chip label="MANAGED BATCH" size="small" sx={{ bgcolor: 'white', color: '#E8391D', fontWeight: 900, borderRadius: '8px 24px 8px 24px' }} />
               </Stack>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                Facilitator: <b>{batch?.facilitator?.name}</b> • Active Cohort Overview
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
+                Facilitator: <b>{batch?.facilitator?.name}</b> • Active Overview
               </Typography>
             </Box>
+          </Box>
 
-            <Box component="form" onSubmit={handleInvite} sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
-              <TextField
-                size="small"
-                placeholder="student@example.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                InputProps={{ sx: { borderRadius: 4, bgcolor: 'white', width: 280 } }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="secondary"
-                startIcon={inviteMutation.isPending ? <CircularProgress size={16} color="inherit" /> : <Send />}
-                disabled={inviteMutation.isPending}
-              >
-                Invite
-              </Button>
-            </Box>
+          <Box component="form" onSubmit={handleInvite} sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
+            <TextField
+              size="small"
+              placeholder="student@example.com"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              InputProps={{ sx: { borderRadius: 4, bgcolor: 'white', width: 280 } }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="secondary"
+              startIcon={inviteMutation.isPending ? <CircularProgress size={16} color="inherit" /> : <Send />}
+              disabled={inviteMutation.isPending}
+            >
+              Invite
+            </Button>
           </Box>
 
           <Divider sx={{ opacity: 0.1 }} />
 
-          {/* Roster Table */}
-          <Card sx={{ overflow: 'hidden' }}>
-            <Box sx={{ p: 3, bgcolor: 'action.hover', borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="h6" fontWeight={900} color="secondary">Student Roster</Typography>
-            </Box>
-            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', py: 3 }}>Student Identity</TableCell>
-                    <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Academic Status</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Lifecycle Actions</TableCell>
+        {/* Roster Table */}
+        <Card sx={{ overflow: 'hidden' }}>
+          <Box sx={{ p: 3, bgcolor: 'action.hover', borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight={900} color="secondary">Student Roster</Typography>
+          </Box>
+          <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', py: 3 }}>Student Identity</TableCell>
+                  <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Academic Status</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Lifecycle Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {students.map((student) => (
+                  <TableRow key={student._id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                    <TableCell sx={{ py: 3 }}>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar sx={{ bgcolor: 'secondary.main', borderRadius: 2 }}>{student.name[0]}</Avatar>
+                        <Box>
+                          <Typography variant="subtitle2" fontWeight={800}>{student.name}</Typography>
+                          <Typography variant="caption" color="text.secondary" fontWeight={700}>{student.email}</Typography>
+                        </Box>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={student.status}
+                        color={getStatusColor(student.status)}
+                        size="small"
+                        sx={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '0.7rem' }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Tooltip title={student.status === STUDENT_STATUS.ACTIVE ? 'Deactivate Account' : 'Reactivate Account'}>
+                          <Button
+                            variant="outlined"
+                            color={student.status === STUDENT_STATUS.ACTIVE ? 'error' : 'success'}
+                            size="small"
+                            onClick={() => handleStatusChange(student._id, student.status)}
+                            startIcon={student.status === STUDENT_STATUS.ACTIVE ? <PersonOff /> : <PersonAdd />}
+                            sx={{ borderRadius: 3 }}
+                          >
+                            {student.status === STUDENT_STATUS.ACTIVE ? 'Disable' : 'Enable'}
+                          </Button>
+                        </Tooltip>
+                        <IconButton size="small"><MoreVert /></IconButton>
+                      </Stack>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {students.map((student) => (
-                    <TableRow key={student._id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
-                      <TableCell sx={{ py: 3 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                          <Avatar sx={{ bgcolor: 'secondary.main', borderRadius: 2 }}>{student.name[0]}</Avatar>
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight={800}>{student.name}</Typography>
-                            <Typography variant="caption" color="text.secondary" fontWeight={700}>{student.email}</Typography>
-                          </Box>
-                        </Stack>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={student.status}
-                          color={getStatusColor(student.status)}
-                          size="small"
-                          sx={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '0.7rem' }}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Tooltip title={student.status === STUDENT_STATUS.ACTIVE ? 'Deactivate Account' : 'Reactivate Account'}>
-                            <Button
-                              variant="outlined"
-                              color={student.status === STUDENT_STATUS.ACTIVE ? 'error' : 'success'}
-                              size="small"
-                              onClick={() => handleStatusChange(student._id, student.status)}
-                              startIcon={student.status === STUDENT_STATUS.ACTIVE ? <PersonOff /> : <PersonAdd />}
-                              sx={{ borderRadius: 3 }}
-                            >
-                              {student.status === STUDENT_STATUS.ACTIVE ? 'Disable' : 'Enable'}
-                            </Button>
-                          </Tooltip>
-                          <IconButton size="small"><MoreVert /></IconButton>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {students.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={3} sx={{ py: 8, textAlign: 'center' }}>
-                        <Typography variant="body1" color="text.secondary">No students enrolled in this batch yet.</Typography>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Card>
+                ))}
+                {students.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} sx={{ py: 8, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">No students enrolled in this batch yet.</Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Card>
 
-        </Box>
-      </AppShell>
+      </Box>
+    </AppShell>
     </ThemeProvider>
   );
 };

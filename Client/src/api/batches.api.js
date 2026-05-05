@@ -12,3 +12,10 @@ export const createBatch = async (data) => {
   return await api.post('/batches', data);
 };
 
+export const updateBatch = async (id, data) => {
+  return await api.put(`/batches/${id}`, data);
+};
+
+export const deleteBatch = async (id) => {
+  return await api.delete(`/batches/${id}`);
+};

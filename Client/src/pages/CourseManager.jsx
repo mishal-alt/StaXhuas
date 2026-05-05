@@ -39,7 +39,9 @@ import {
   ChevronRight,
   Edit,
   Delete,
-  AccessTime
+  AccessTime,
+  CheckCircle,
+  TrendingUp
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -216,30 +218,94 @@ const CourseManager = () => {
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 8 }}>
 
-          {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <Box>
-              <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
+          {/* Header - Brush Stroke Style */}
+          <Box sx={{ 
+            position: 'relative', 
+            p: 6, 
+            borderRadius: '30px 150px 40px 120px', 
+            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+            color: 'white',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 4,
+            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-10%',
+              width: '120%',
+              height: '200%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+              pointerEvents: 'none'
+            }
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
                 Course Manager
               </Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
                 Design and refine your master course tracks.
               </Typography>
             </Box>
             <Button
               variant="contained"
               startIcon={<Add />}
-              disableElevation
               onClick={() => setShowCourseForm(true)}
-              sx={{ py: 2, px: 4 }}
+              sx={{ 
+                bgcolor: 'white', 
+                color: '#E8391D',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.9)', transform: 'translateY(-2px)' },
+                px: 5,
+                py: 2,
+                borderRadius: '16px 40px 16px 40px',
+                fontWeight: 900,
+                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                zIndex: 1
+              }}
             >
               New Course
             </Button>
           </Box>
 
-          <Divider sx={{ opacity: 0.1 }} />
+          {/* Analytics Board - Curriculum Intel */}
+          <Grid container spacing={3} justifyContent="center">
+            {[
+              { label: 'Master Tracks', value: courses.length, icon: <School />, color: '#E8391D' },
+              { label: 'Active Tracks', value: courses.filter(c => c.isActive).length, icon: <CheckCircle />, color: '#1976d2' },
+              { label: 'Total Duration', value: courses.reduce((sum, c) => sum + (c.durationMonths || 0), 0) + ' Mo', icon: <AccessTime />, color: '#2e7d32' },
+              { label: 'Avg Duration', value: courses.length ? (courses.reduce((sum, c) => sum + (c.durationMonths || 0), 0) / courses.length).toFixed(1) + ' Mo' : '0 Mo', icon: <TrendingUp />, color: '#9c27b0' },
+            ].map((stat, i) => (
+              <Grid item xs={12} sm={3} md={3} lg={3} key={i}>
+                <Card sx={{ 
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                  '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                  borderRadius: '24px',
+                  border: '1px solid rgba(0,0,0,0.05)',
+                  height: '100%',
+                  bgcolor: 'white'
+                }}>
+                  <CardContent sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ p: 2, bgcolor: `${stat.color}10`, color: stat.color, borderRadius: 4 }}>
+                      {stat.icon}
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
+                        {stat.label.toUpperCase()}
+                      </Typography>
+                      <Typography variant="h4" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>{stat.value}</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
 
           <Grid container spacing={4} sx={{ mt: 1 }}>
             {/* Courses List */}

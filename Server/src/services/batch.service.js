@@ -71,7 +71,7 @@ export const getBatchById = async (user, batchId) => {
     .populate('course', 'name durationMonths')
     .populate('facilitator', 'name email')
     .populate('config');
-    
+
   if (!batch) throw new ApiError(404, 'Batch not found');
 
   // Enforce Facilitator can only view their own batches

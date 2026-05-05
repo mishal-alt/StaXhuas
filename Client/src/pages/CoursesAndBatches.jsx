@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { toast } from "sonner";
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Button, 
-  Stack, 
-  TextField, 
-  MenuItem, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Stack,
+  TextField,
+  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -28,15 +28,20 @@ import {
   Divider,
   ThemeProvider,
   createTheme,
-  CircularProgress
+  CircularProgress,
+  InputAdornment
 } from '@mui/material';
-import { 
-  Add, 
-  People, 
+import {
+  Add,
+  People,
   School,
   CalendarMonth,
   Close,
-  Assignment
+  Assignment,
+  Search,
+  Edit,
+  Delete,
+  Layers
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -98,6 +103,8 @@ const CoursesAndBatches = () => {
   const queryClient = useQueryClient();
 
   const [showBatchForm, setShowBatchForm] = useState(false);
+  const [editingBatch, setEditingBatch] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data: coursesRes, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses'],
@@ -117,17 +124,27 @@ const CoursesAndBatches = () => {
 
 
   const createBatchMutation = useMutation({
-    mutationFn: batchApi.createBatch,
+    mutationFn: (data) => editingBatch ? batchApi.updateBatch(editingBatch._id, data) : batchApi.createBatch(data),
     onSuccess: () => {
-      toast.success('Batch created successfully');
+      toast.success(`Batch ${editingBatch ? 'updated' : 'created'} successfully`);
       queryClient.invalidateQueries(['batches']);
       setShowBatchForm(false);
+      setEditingBatch(null);
       resetBatch();
     },
-    onError: (err) => toast.error(err.message || 'Failed to create batch'),
+    onError: (err) => toast.error(err.message || `Failed to ${editingBatch ? 'update' : 'create'} batch`),
   });
 
-  const { register: regBatch, handleSubmit: handleBatchSubmit, reset: resetBatch } = useForm();
+  const deleteBatchMutation = useMutation({
+    mutationFn: batchApi.deleteBatch,
+    onSuccess: () => {
+      toast.success('Batch deleted successfully');
+      queryClient.invalidateQueries(['batches']);
+    },
+    onError: (err) => toast.error(err.message || 'Failed to delete batch'),
+  });
+
+  const { register: regBatch, handleSubmit: handleBatchSubmit, reset: resetBatch, control } = useForm();
 
   if (coursesLoading || batchesLoading) {
     return (
@@ -143,36 +160,66 @@ const CoursesAndBatches = () => {
   const batches = batchesRes?.data || [];
   const facilitators = facilitatorsRes?.data || [];
 
+  const filteredBatches = batches.filter(batch =>
+    batch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    batch.course?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
-          
-          {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <Box>
-              <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 8 }}>
+
+          {/* Header - Brush Stroke Style */}
+          <Box sx={{
+            position: 'relative',
+            p: 6,
+            borderRadius: '30px 150px 40px 120px',
+            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 4,
+            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-10%',
+              width: '120%',
+              height: '200%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
+              pointerEvents: 'none'
+            }
+          }}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
                 Batch Management
               </Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                Oversee and optimize your assigned academic cohorts.
+              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
+                High-level overview of cohort tracks and student enrollment.
               </Typography>
             </Box>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Box sx={{ display: { xs: 'none', md: 'block' }, textAlign: 'right' }}>
-                <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>GLOBAL STATUS</Typography>
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
-                   <Box sx={{ width: 8, height: 8, bgcolor: 'success.main', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
-                   <Typography variant="body2" fontWeight={800}>ALL SYSTEMS OPERATIONAL</Typography>
-                </Stack>
-              </Box>
+            <Stack direction="row" spacing={4} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
               {isAdmin && (
-                <Button 
-                  variant="contained" 
-                  startIcon={<Add />} 
-                  disableElevation 
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
                   onClick={() => setShowBatchForm(true)}
-                  sx={{ py: 2, px: 4 }}
+                  sx={{
+                    bgcolor: 'white',
+                    color: '#E8391D',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)', transform: 'translateY(-2px)' },
+                    px: 5,
+                    py: 2,
+                    borderRadius: '16px 40px 16px 40px',
+                    fontWeight: 900,
+                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
                 >
                   Create Batch
                 </Button>
@@ -180,104 +227,226 @@ const CoursesAndBatches = () => {
             </Stack>
           </Box>
 
-          <Divider sx={{ opacity: 0.1 }} />
-
-          {/* Batches Grid */}
-          <Grid container spacing={4}>
-            {batches.map((batch) => (
-              <Grid item xs={12} md={6} lg={4} key={batch._id}>
-                <Card sx={{ 
-                  height: '100%', 
-                  position: 'relative', 
-                  borderTop: '6px solid #E8391D',
-                  transition: 'all 0.3s',
-                  '&:hover': { transform: 'translateY(-8px)', boxShadow: '0 12px 40px rgba(0,0,0,0.1)' }
+          {/* Analytics Board - Real Data */}
+          <Grid container spacing={3} justifyContent="center">
+            {[
+              { label: 'Total Batches', value: batches.length, icon: <Layers />, color: '#E8391D' },
+              { label: 'Active Cohorts', value: batches.filter(b => b.status !== 'completed').length, icon: <CalendarMonth />, color: '#1976d2' },
+              { label: 'Enrolled Students', value: batches.reduce((sum, b) => sum + (b.students?.length || 0), 0), icon: <People />, color: '#2e7d32' },
+              { label: 'Course Tracks', value: courses.length, icon: <School />, color: '#9c27b0' },
+            ].map((stat, i) => (
+              <Grid item xs={12} sm={3} md={3} lg={3} key={i}>
+                <Card sx={{
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                  borderRadius: '24px',
+                  border: '1px solid rgba(0,0,0,0.05)',
+                  height: '100%',
+                  bgcolor: 'white'
                 }}>
-                  <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 4, color: 'primary.main' }}>
-                        <School fontSize="large" />
-                      </Box>
-                      <Chip label="ACTIVE" color="success" size="small" sx={{ fontWeight: 900, borderRadius: 2 }} />
+                  <CardContent sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ p: 2, bgcolor: `${stat.color}10`, color: stat.color, borderRadius: 4 }}>
+                      {stat.icon}
                     </Box>
-
                     <Box>
-                      <Typography variant="h5" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>{batch.name}</Typography>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                        {batch.course?.name || 'GENERIC TRACK'}
+                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
+                        {stat.label.toUpperCase()}
                       </Typography>
+                      <Typography variant="h4" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>{stat.value}</Typography>
                     </Box>
-
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Paper elevation={0} sx={{ p: 2, bgcolor: 'background.default', borderRadius: 4, textAlign: 'center' }}>
-                          <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                             <People sx={{ fontSize: 14, color: 'text.secondary' }} />
-                             <Typography variant="caption" fontWeight={900} color="text.secondary">STUDENTS</Typography>
-                          </Stack>
-                          <Typography variant="h6" fontWeight={900}>{batch.students?.length || 0}</Typography>
-                        </Paper>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Paper elevation={0} sx={{ p: 2, bgcolor: 'background.default', borderRadius: 4, textAlign: 'center' }}>
-                          <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                             <CalendarMonth sx={{ fontSize: 14, color: 'text.secondary' }} />
-                             <Typography variant="caption" fontWeight={900} color="text.secondary">LAUNCHED</Typography>
-                          </Stack>
-                          <Typography variant="body2" fontWeight={900} sx={{ mt: 0.5 }}>
-                            {new Date(batch.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </Typography>
-                        </Paper>
-                      </Grid>
-                    </Grid>
-
-                    <Button 
-                      fullWidth 
-                      variant="contained" 
-                      color="secondary" 
-                      component={Link} 
-                      to={`/batches/${batch._id}`}
-                      disableElevation
-                      sx={{ mt: 'auto', py: 2 }}
-                    >
-                      Manage Cohort
-                    </Button>
                   </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
 
+          {/* Search Bar */}
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              placeholder="Search batches by name or course track..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: 'text.secondary', ml: 1 }} />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 4,
+                  bgcolor: 'background.paper',
+                  '& fieldset': { border: 'none' },
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                  py: 1
+                }
+              }}
+            />
+          </Box>
+
+          {/* Batches List (Linear Type) */}
+          <Stack spacing={2}>
+            {filteredBatches.map((batch) => (
+              <Card key={batch._id} sx={{
+                position: 'relative',
+                borderLeft: '6px solid #E8391D',
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'translateX(8px)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  '& .batch-actions': { opacity: 1 }
+                }
+              }}>
+                <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 3, color: 'primary.main', display: { xs: 'none', sm: 'block' } }}>
+                    <School />
+                  </Box>
+
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="subtitle1" fontWeight={900}>{batch.name}</Typography>
+                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
+                      {batch.course?.name || 'COURSE'}
+                    </Typography>
+                  </Box>
+
+                  <Stack direction="row" spacing={6} sx={{ display: { xs: 'none', md: 'flex' }, mx: 4 }}>
+                    <Box sx={{ textAlign: 'center', minWidth: 80 }}>
+                      <Typography variant="caption" fontWeight={900} color="text.secondary" display="block">STUDENTS</Typography>
+                      <Typography variant="subtitle2" fontWeight={900}>{batch.students?.length || 0}</Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center', minWidth: 100 }}>
+                      <Typography variant="caption" fontWeight={900} color="text.secondary" display="block">LAUNCHED</Typography>
+                      <Typography variant="subtitle2" fontWeight={900}>
+                        {new Date(batch.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  <Box sx={{
+                    display: { xs: 'none', sm: 'flex' },
+                    alignItems: 'center',
+                    gap: 1,
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 2,
+                    bgcolor: batch.isActive ? 'rgba(46, 125, 50, 0.08)' : 'rgba(211, 47, 47, 0.08)',
+                    minWidth: 90,
+                    justifyContent: 'center'
+                  }}>
+                    <Box sx={{ width: 6, height: 6, bgcolor: batch.isActive ? 'success.main' : 'error.main', borderRadius: '50%' }} />
+                    <Typography variant="caption" fontWeight={900} color={batch.isActive ? 'success.main' : 'error.main'} sx={{ letterSpacing: '0.05em' }}>
+                      {batch.isActive ? 'ACTIVE' : 'INACTIVE'}
+                    </Typography>
+                  </Box>
+
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    className="batch-actions"
+                    sx={{
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      display: { xs: 'none', sm: 'flex' }
+                    }}
+                  >
+                    <IconButton size="small" color="primary" onClick={() => {
+                      setEditingBatch(batch);
+                      resetBatch({
+                        name: batch.name,
+                        course: batch.course?._id,
+                        facilitator: batch.facilitator?._id,
+                        startDate: new Date(batch.startDate).toISOString().split('T')[0],
+                        isActive: batch.isActive
+                      });
+                      setShowBatchForm(true);
+                    }}>
+                      <Edit sx={{ fontSize: 18 }} />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => {
+                      if (confirm('Delete this batch?')) deleteBatchMutation.mutate(batch._id);
+                    }}>
+                      <Delete sx={{ fontSize: 18 }} />
+                    </IconButton>
+                  </Stack>
+
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    component={Link}
+                    to={`/batches/${batch._id}`}
+                    disableElevation
+                    size="small"
+                    sx={{ py: 1, px: 3, borderRadius: 2 }}
+                  >
+                    Manage Batch
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+
 
           {/* Dialogs */}
-          <Dialog open={showBatchForm} onClose={() => setShowBatchForm(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 8 } }}>
+          <Dialog open={showBatchForm} onClose={() => { setShowBatchForm(false); setEditingBatch(null); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 8 } }}>
             <Box sx={{ p: 4 }}>
-              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>Launch New Batch</Typography>
+              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>
+                {editingBatch ? 'Edit Batch' : 'Create New Batch'}
+              </Typography>
               <Box component="form" onSubmit={handleBatchSubmit((data) => createBatchMutation.mutate(data))} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField fullWidth label="Batch Identity" placeholder="e.g. MERN-B1-2026" {...regBatch('name', { required: true })} />
-                <TextField 
-                  select 
-                  fullWidth 
-                  label="Academic Track" 
-                  defaultValue=""
-                  {...regBatch('course', { required: true })}
-                >
-                  {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}
-                </TextField>
-                <TextField 
-                  select 
-                  fullWidth 
-                  label="Lead Facilitator" 
-                  defaultValue=""
-                  {...regBatch('facilitator', { required: true })}
-                >
-                  {facilitators.map(f => <MenuItem key={f._id} value={f._id}>{f.name}</MenuItem>)}
-                </TextField>
+                <Controller
+                  name="course"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      fullWidth
+                      label="Course Name"
+                      error={!!field.error}
+                    >
+                      {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}
+                    </TextField>
+                  )}
+                />
+                <Controller
+                  name="facilitator"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      fullWidth
+                      label="Teacher"
+                      error={!!field.error}
+                    >
+                      {facilitators.map(f => <MenuItem key={f._id} value={f._id}>{f.name}</MenuItem>)}
+                    </TextField>
+                  )}
+                />
+                <Controller
+                  name="isActive"
+                  control={control}
+                  defaultValue={true}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      fullWidth
+                      label="Batch Status"
+                    >
+                      <MenuItem value={true}>Active</MenuItem>
+                      <MenuItem value={false}>Inactive</MenuItem>
+                    </TextField>
+                  )}
+                />
                 <TextField fullWidth type="date" label="Launch Date" InputLabelProps={{ shrink: true }} {...regBatch('startDate', { required: true })} />
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-                  <Button onClick={() => setShowBatchForm(false)} color="secondary">Cancel</Button>
+                  <Button onClick={() => { setShowBatchForm(false); setEditingBatch(null); }} color="secondary">Cancel</Button>
                   <Button type="submit" variant="contained" disableElevation disabled={createBatchMutation.isPending}>
-                    {createBatchMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Launch Batch'}
+                    {createBatchMutation.isPending ? <CircularProgress size={24} color="inherit" /> : (editingBatch ? 'Save Changes' : 'Create Batch')}
                   </Button>
                 </Stack>
               </Box>

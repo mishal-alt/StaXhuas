@@ -12,6 +12,8 @@ router.use(authMiddleware);
 
 // Admins only
 router.post('/', requireRole(ROLES.ADMIN), validate(createBatchSchema), batchController.createBatch);
+router.put('/:id', requireRole(ROLES.ADMIN), batchController.updateBatch);
+router.delete('/:id', requireRole(ROLES.ADMIN), batchController.deleteBatch);
 router.patch('/:id/config', requireRole(ROLES.ADMIN), validate(updateBatchConfigSchema), batchController.updateConfig);
 
 // Admins and Facilitators
