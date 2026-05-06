@@ -89,7 +89,6 @@ const ScrumManagement = () => {
             alignItems: 'center', 
             flexWrap: 'wrap', 
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',

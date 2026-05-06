@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
 import {
-  Box,
+  CircularProgress,
+Box,
   Typography,
   Grid,
   Card,
@@ -19,7 +20,6 @@ import {
   Divider,
   ThemeProvider,
   createTheme,
-  CircularProgress,
   List,
   ListItem,
   ListItemText,
@@ -214,6 +214,7 @@ const CourseManager = () => {
 
   const courses = coursesRes?.data || [];
   const modules = modulesRes?.data || [];
+  const activeModule = modules.find(m => m._id === activeModuleId);
 
   return (
     <ThemeProvider theme={theme}>
@@ -232,7 +233,6 @@ const CourseManager = () => {
             alignItems: 'center', 
             flexWrap: 'wrap', 
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',
@@ -265,7 +265,6 @@ const CourseManager = () => {
                 py: 2,
                 borderRadius: '16px 40px 16px 40px',
                 fontWeight: 900,
-                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 zIndex: 1
               }}
@@ -455,6 +454,8 @@ const CourseManager = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setActiveModuleId(module._id);
+                                    setEditingTask(null);
+                                    resetTask({ title: '', type: '', week: '', description: '' });
                                     setShowTaskForm(true);
                                   }}
                                   sx={{ fontSize: '0.65rem' }}
@@ -480,12 +481,14 @@ const CourseManager = () => {
                                     <Stack direction="row" spacing={1} alignItems="center">
                                       <Box className="task-actions" sx={{ opacity: 0, transition: 'opacity 0.2s' }}>
                                         <IconButton size="small" color="primary" onClick={() => {
+                                          setActiveModuleId(module._id);
                                           setEditingTask(task);
                                           resetTask(task);
                                           setShowTaskForm(true);
                                         }}><Edit sx={{ fontSize: 16 }} /></IconButton>
                                         <IconButton size="small" color="error" onClick={() => { if (confirm('Delete task?')) deleteTaskMutation.mutate(task._id); }}><Delete sx={{ fontSize: 16 }} /></IconButton>
                                       </Box>
+                                      {task.week && <Chip label={`WEEK ${task.week}`} size="small" color="secondary" sx={{ fontWeight: 900, fontSize: '0.6rem' }} />}
                                       <Chip label={task.type} size="small" sx={{ fontWeight: 900, fontSize: '0.6rem' }} />
                                     </Stack>
                                   </Paper>
@@ -517,12 +520,9 @@ const CourseManager = () => {
                   alignItems: 'center',
                   textAlign: 'center',
                   gap: 3,
-                  bgcolor: 'white',
-                  borderRadius: 2,
-                  border: '2px dashed rgba(0,0,0,0.1)',
                   px: 4
                 }}>
-                  <Box sx={{ p: 3, bgcolor: 'action.hover', borderRadius: '50%' }}>
+                  <Box sx={{ p: 3, borderRadius: '50%' }}>
                     <School sx={{ fontSize: 60, color: 'text.disabled' }} />
                   </Box>
                   <Typography variant="h6" color="text.disabled" fontWeight={800} sx={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>
@@ -577,6 +577,13 @@ const CourseManager = () => {
                   <MenuItem value="technical">Technical</MenuItem>
                   <MenuItem value="personal">Personal / Soft Skills</MenuItem>
                 </TextField>
+                {activeModule && (
+                  <TextField select fullWidth label="Assigned Week" defaultValue="" {...regTask('week', { required: true, valueAsNumber: true })}>
+                    {[...Array(activeModule.durationWeeks || 1)].map((_, i) => (
+                      <MenuItem key={i + 1} value={i + 1}>Week {i + 1}</MenuItem>
+                    ))}
+                  </TextField>
+                )}
                 <TextField fullWidth multiline rows={3} label="Task Description" {...regTask('description', { required: true })} />
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
                   <Button onClick={() => { setShowTaskForm(false); setEditingTask(null); resetTask(); }} color="secondary">Cancel</Button>

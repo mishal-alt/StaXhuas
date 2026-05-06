@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
@@ -19,7 +19,8 @@ import {
   IconButton,
   Tooltip,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Pagination
 } from '@mui/material';
 import {
   Send,
@@ -85,6 +86,15 @@ const DUMMY_INVITES = [
 ];
 
 const Invitations = () => {
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 8;
+
+  const paginatedInvites = DUMMY_INVITES.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.ceil(DUMMY_INVITES.length / itemsPerPage);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
@@ -102,7 +112,6 @@ const Invitations = () => {
             alignItems: 'center', 
             flexWrap: 'wrap', 
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',
@@ -134,7 +143,6 @@ const Invitations = () => {
                 py: 2,
                 borderRadius: '16px 40px 16px 40px',
                 fontWeight: 900,
-                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 zIndex: 1
               }}
@@ -206,7 +214,7 @@ const Invitations = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {DUMMY_INVITES.map((invite) => (
+                  {paginatedInvites.map((invite) => (
                     <TableRow key={invite.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                       <TableCell sx={{ py: 3 }}>
                         <Stack direction="row" spacing={2} alignItems="center">
@@ -251,6 +259,27 @@ const Invitations = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4, bgcolor: 'background.paper', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                  shape="rounded"
+                  size="large"
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      fontWeight: 900,
+                      borderRadius: 2,
+                      '&.Mui-selected': {
+                        boxShadow: '0 4px 12px rgba(232, 57, 29, 0.3)',
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            )}
           </Card>
         </Box>
       </AppShell>

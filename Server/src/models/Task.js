@@ -14,6 +14,10 @@ const taskSchema = new mongoose.Schema(
       ref: 'Module',
       required: true,
     },
+    week: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );

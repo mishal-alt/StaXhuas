@@ -8,7 +8,7 @@ import { logAction } from './audit.service.js';
 import { ROLES } from '../utils/constants.js';
 
 export const createBatch = async (user, data) => {
-  const { name, course: courseId, facilitator: facilitatorId, startDate, config: configData } = data;
+  const { name, course: courseId, facilitator: facilitatorId, startDate, isActive, config: configData } = data;
 
   const existing = await Batch.findOne({ name });
   if (existing) throw new ApiError(400, 'Batch name already in use');
@@ -32,6 +32,7 @@ export const createBatch = async (user, data) => {
       facilitator: facilitatorId,
       config: config._id,
       startDate,
+      ...(isActive !== undefined && { isActive }),
     });
 
     await batch.save({ session });
@@ -97,4 +98,61 @@ export const updateBatchConfig = async (user, batchId, data) => {
   });
 
   return config;
+};
+
+export const updateBatch = async (user, batchId, data) => {
+  const { name, course, facilitator, startDate, isActive } = data;
+
+  const batch = await Batch.findById(batchId);
+  if (!batch) throw new ApiError(404, 'Batch not found');
+
+  if (name && name !== batch.name) {
+    const existing = await Batch.findOne({ name });
+    if (existing) throw new ApiError(400, 'Batch name already in use');
+    batch.name = name;
+  }
+
+  if (course) batch.course = course;
+  if (facilitator) batch.facilitator = facilitator;
+  if (startDate) batch.startDate = startDate;
+  if (isActive !== undefined) batch.isActive = isActive;
+
+  await batch.save();
+
+  await logAction({
+    action: 'BATCH_UPDATED',
+    performedBy: user._id,
+    entityType: 'Batch',
+    entityId: batch._id,
+    details: data,
+  });
+
+  return batch;
+};
+
+export const deleteBatch = async (user, batchId) => {
+  const batch = await Batch.findById(batchId);
+  if (!batch) throw new ApiError(404, 'Batch not found');
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    await BatchConfig.findByIdAndDelete(batch.config).session(session);
+    await Batch.findByIdAndDelete(batchId).session(session);
+
+    await logAction({
+      action: 'BATCH_DELETED',
+      performedBy: user._id,
+      entityType: 'Batch',
+      entityId: batch._id,
+      details: { name: batch.name },
+    }, session);
+
+    await session.commitTransaction();
+    session.endSession();
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };

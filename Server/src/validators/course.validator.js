@@ -24,4 +24,5 @@ export const createTaskSchema = Joi.object({
   title: Joi.string().required(),
   description: Joi.string().required(),
   type: Joi.string().valid('personal', 'technical').required(),
+  week: Joi.number().min(1).required(),
 });

@@ -2,8 +2,9 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { 
-  Box, 
+import {
+  CircularProgress,
+Box, 
   Typography, 
   Grid, 
   Card, 
@@ -18,8 +19,7 @@ import {
   Paper,
   ThemeProvider,
   createTheme,
-  Avatar,
-  CircularProgress
+  Avatar
 } from '@mui/material';
 import { 
   Search, 

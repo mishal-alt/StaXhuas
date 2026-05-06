@@ -3,30 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   Box, 
   Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Stack, 
   TextField, 
   MenuItem, 
-  Tabs,
-  Tab,
   ThemeProvider,
   createTheme,
-  CircularProgress,
   Divider
 } from '@mui/material';
-import { 
-  CheckCircle, 
-  Mail, 
-  People, 
-  AssignmentTurnedIn,
-  MoveToInbox
-} from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
 import AttendanceRoster from '../features/attendance/AttendanceRoster';
-import LeaveInbox from '../features/leaves/LeaveInbox';
 import StudentAttendanceAndLeaves from '../features/attendance/StudentAttendanceAndLeaves';
 import * as batchApi from '../api/batches.api';
 import { useAuth } from '../context/AuthContext';
@@ -46,15 +31,6 @@ const theme = createTheme({
   },
   shape: { borderRadius: 24 },
   components: {
-    MuiTab: {
-      styleOverrides: {
-        root: {
-          fontWeight: 900,
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
-        }
-      }
-    },
     MuiCard: {
       styleOverrides: {
         root: {
@@ -78,14 +54,7 @@ const AttendanceAndLeaves = () => {
   });
 
   const batches = batchesRes?.data || [];
-  const [selectedBatch, setSelectedBatch] = useState('');
-  const [activeTab, setActiveTab] = useState(0); // 0: Attendance, 1: Leaves
-
-  React.useEffect(() => {
-    if (batches.length > 0 && !selectedBatch) {
-      setSelectedBatch(batches[0]._id);
-    }
-  }, [batches, selectedBatch]);
+  const [selectedBatch, setSelectedBatch] = useState('all');
 
   if (isStudent) {
     return (
@@ -101,7 +70,6 @@ const AttendanceAndLeaves = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
           
           {/* Header */}
-          {/* Header - Brush Stroke Style */}
           <Box sx={{ 
             position: 'relative', 
             p: 6, 
@@ -113,7 +81,6 @@ const AttendanceAndLeaves = () => {
             alignItems: 'center', 
             flexWrap: 'wrap', 
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',
@@ -128,10 +95,10 @@ const AttendanceAndLeaves = () => {
           }}>
             <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-                Daily Operations
+                Student Management
               </Typography>
               <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
-                Manage attendance and leaves for your cohorts.
+                Manage all students across different cohorts.
               </Typography>
             </Box>
             
@@ -142,11 +109,11 @@ const AttendanceAndLeaves = () => {
               onChange={(e) => setSelectedBatch(e.target.value)}
               variant="outlined"
               sx={{ 
-                width: 300,
+                width: 180,
                 zIndex: 1,
                 '& .MuiOutlinedInput-root': {
                   bgcolor: 'white',
-                  borderRadius: '12px 32px 12px 32px', // Matching organic feel
+                  borderRadius: '12px 20px 12px 20px',
                   height: 56,
                   '& fieldset': { border: 'none' },
                   '&:hover fieldset': { border: 'none' },
@@ -169,6 +136,7 @@ const AttendanceAndLeaves = () => {
                 }
               }}
             >
+              <MenuItem value="all" sx={{ fontWeight: 800 }}>All Students</MenuItem>
               {batches.map(b => (
                 <MenuItem key={b._id} value={b._id} sx={{ fontWeight: 800 }}>{b.name}</MenuItem>
               ))}
@@ -177,39 +145,11 @@ const AttendanceAndLeaves = () => {
 
           <Divider sx={{ opacity: 0.1 }} />
 
-          {/* Tabs */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs 
-              value={activeTab} 
-              onChange={(e, v) => setActiveTab(v)} 
-              indicatorColor="primary" 
-              textColor="primary"
-            >
-              <Tab icon={<AssignmentTurnedIn />} iconPosition="start" label="Daily Attendance" />
-              <Tab icon={<MoveToInbox />} iconPosition="start" label="Leaves Inbox" />
-            </Tabs>
-          </Box>
-
           {/* Content */}
           <Box sx={{ mt: 2 }}>
-            {activeTab === 0 && (
-              <Box>
-                {selectedBatch ? <AttendanceRoster batchId={selectedBatch} /> : (
-                  <Box sx={{ p: 8, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 8 }}>
-                    <Typography variant="h6" color="text.secondary">Please select a batch to mark attendance.</Typography>
-                  </Box>
-                )}
-              </Box>
-            )}
-            {activeTab === 1 && (
-              <Box>
-                {selectedBatch ? <LeaveInbox batchId={selectedBatch} /> : (
-                  <Box sx={{ p: 8, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 8 }}>
-                    <Typography variant="h6" color="text.secondary">Please select a batch to review leaves.</Typography>
-                  </Box>
-                )}
-              </Box>
-            )}
+            <Box>
+              <AttendanceRoster batchId={selectedBatch} />
+            </Box>
           </Box>
 
         </Box>

@@ -5,6 +5,7 @@ export const createBatchSchema = Joi.object({
   course: Joi.string().hex().length(24).required(),
   facilitator: Joi.string().hex().length(24).required(),
   startDate: Joi.date().iso().required(),
+  isActive: Joi.boolean().optional(),
   config: Joi.object({
     leaveLimit: Joi.number().min(0),
     leaveLimitPeriod: Joi.string().valid('per_module', 'per_course'),

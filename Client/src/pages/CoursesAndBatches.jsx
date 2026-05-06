@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from "sonner";
 import {
-  Box,
+  CircularProgress,
+Box,
   Typography,
   Grid,
   Card,
@@ -28,8 +29,8 @@ import {
   Divider,
   ThemeProvider,
   createTheme,
-  CircularProgress,
-  InputAdornment
+  InputAdornment,
+  Pagination
 } from '@mui/material';
 import {
   Add,
@@ -105,6 +106,8 @@ const CoursesAndBatches = () => {
   const [showBatchForm, setShowBatchForm] = useState(false);
   const [editingBatch, setEditingBatch] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 6;
 
   const { data: coursesRes, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses'],
@@ -165,6 +168,14 @@ const CoursesAndBatches = () => {
     batch.course?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const paginatedBatches = filteredBatches.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.ceil(filteredBatches.length / itemsPerPage);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
@@ -182,7 +193,6 @@ const CoursesAndBatches = () => {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',
@@ -217,7 +227,6 @@ const CoursesAndBatches = () => {
                     py: 2,
                     borderRadius: '16px 40px 16px 40px',
                     fontWeight: 900,
-                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 >
@@ -286,7 +295,7 @@ const CoursesAndBatches = () => {
 
           {/* Batches List (Linear Type) */}
           <Stack spacing={2}>
-            {filteredBatches.map((batch) => (
+            {paginatedBatches.map((batch) => (
               <Card key={batch._id} sx={{
                 position: 'relative',
                 borderLeft: '6px solid #E8391D',
@@ -383,6 +392,28 @@ const CoursesAndBatches = () => {
                 </CardContent>
               </Card>
             ))}
+
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                  shape="rounded"
+                  size="large"
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      fontWeight: 900,
+                      borderRadius: 2,
+                      '&.Mui-selected': {
+                        boxShadow: '0 4px 12px rgba(232, 57, 29, 0.3)',
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            )}
           </Stack>
 
 
@@ -419,7 +450,7 @@ const CoursesAndBatches = () => {
                       {...field}
                       select
                       fullWidth
-                      label="Teacher"
+                      label="Facilitator"
                       error={!!field.error}
                     >
                       {facilitators.map(f => <MenuItem key={f._id} value={f._id}>{f.name}</MenuItem>)}
@@ -442,7 +473,14 @@ const CoursesAndBatches = () => {
                     </TextField>
                   )}
                 />
-                <TextField fullWidth type="date" label="Launch Date" InputLabelProps={{ shrink: true }} {...regBatch('startDate', { required: true })} />
+                <Box>
+                  <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ display: 'block', mb: 1, ml: 1 }}>START DATE</Typography>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    {...regBatch('startDate', { required: true })}
+                  />
+                </Box>
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
                   <Button onClick={() => { setShowBatchForm(false); setEditingBatch(null); }} color="secondary">Cancel</Button>
                   <Button type="submit" variant="contained" disableElevation disabled={createBatchMutation.isPending}>

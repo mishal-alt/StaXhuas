@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Box, 
+import {
+  CircularProgress,
+Box, 
   Typography, 
   Grid, 
   Card, 
@@ -16,7 +17,6 @@ import {
   IconButton,
   TextField,
   Rating,
-  CircularProgress,
   ThemeProvider,
   createTheme
 } from '@mui/material';

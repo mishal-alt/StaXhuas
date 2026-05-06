@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
 import {
-  Box,
+  CircularProgress,
+Box,
   Typography,
   Grid,
   Card,
@@ -15,7 +16,6 @@ import {
   Avatar,
   Divider,
   Paper,
-  CircularProgress,
   ThemeProvider,
   createTheme,
   TextField,
@@ -23,7 +23,8 @@ import {
   IconButton,
   Tooltip,
   Collapse,
-  InputAdornment
+  InputAdornment,
+  Pagination
 } from '@mui/material';
 import {
   Shield,
@@ -88,6 +89,8 @@ const StaffManagement = () => {
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 6;
 
   const { data: usersRes, isLoading: usersLoading } = useQuery({
     queryKey: ['staff'],
@@ -154,6 +157,14 @@ const StaffManagement = () => {
     member.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const paginatedStaff = filteredStaff.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
@@ -171,7 +182,6 @@ const StaffManagement = () => {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',
@@ -200,7 +210,6 @@ const StaffManagement = () => {
                 py: 2,
                 borderRadius: '16px 40px 16px 40px',
                 fontWeight: 900,
-                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 zIndex: 1
               }}
@@ -316,7 +325,7 @@ const StaffManagement = () => {
             </Typography>
 
             <Stack spacing={2}>
-              {filteredStaff.map(member => (
+              {paginatedStaff.map(member => (
                 <Card key={member._id} sx={{
                   transition: 'all 0.3s',
                   '&:hover': {
@@ -395,6 +404,28 @@ const StaffManagement = () => {
                   </CardContent>
                 </Card>
               ))}
+
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
+                    shape="rounded"
+                    size="large"
+                    sx={{
+                      '& .MuiPaginationItem-root': {
+                        fontWeight: 900,
+                        borderRadius: 2,
+                        '&.Mui-selected': {
+                          boxShadow: '0 4px 12px rgba(232, 57, 29, 0.3)',
+                        }
+                      }
+                    }}
+                  />
+                </Box>
+              )}
               {staff.length === 0 && (
                 <Paper variant="outlined" sx={{ p: 8, textAlign: 'center', borderRadius: 8, borderStyle: 'dashed' }}>
                   <Typography color="text.secondary">No active staff members found.</Typography>

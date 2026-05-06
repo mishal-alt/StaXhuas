@@ -1,8 +1,9 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Box, 
+import {
+  CircularProgress,
+Box, 
   Typography, 
   Card, 
   CardContent, 
@@ -12,7 +13,6 @@ import {
   Grid, 
   Chip,
   Divider,
-  CircularProgress,
   ThemeProvider,
   createTheme,
   Button

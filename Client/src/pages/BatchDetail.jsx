@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Box,
+  CircularProgress,
+Box,
   Typography,
   Grid,
   Card,
@@ -24,8 +25,7 @@ import {
   IconButton,
   Tooltip,
   ThemeProvider,
-  createTheme,
-  CircularProgress
+  createTheme
 } from '@mui/material';
 import {
   Mail,
@@ -175,7 +175,6 @@ const BatchDetail = () => {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',

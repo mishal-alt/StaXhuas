@@ -31,7 +31,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Staff Management', path: '/staff', icon: <Users size={20} />, roles: [ROLES.ADMIN] },
     { name: 'Batch Management', path: '/courses', icon: <Layers size={20} />, roles: [ROLES.ADMIN] },
     { name: 'Course Management', path: '/course-management', icon: <BookOpen size={20} />, roles: [ROLES.ADMIN] },
-    { name: 'Global Attendance', path: '/attendance', icon: <Calendar size={20} />, roles: [ROLES.ADMIN] },
+    { name: 'Student Management', path: '/attendance', icon: <Calendar size={20} />, roles: [ROLES.ADMIN] },
     { name: 'All Invitations', path: '/invitations', icon: <Mail size={20} />, roles: [ROLES.ADMIN] },
 
     // Role Specifics

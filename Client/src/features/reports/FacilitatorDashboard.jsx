@@ -2,7 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Box,
+  CircularProgress,
+Box,
   Typography,
   Grid,
   Card,
@@ -16,8 +17,7 @@ import {
   Divider,
   Paper,
   ThemeProvider,
-  createTheme,
-  CircularProgress
+  createTheme
 } from '@mui/material';
 import {
   CalendarToday,
@@ -121,7 +121,6 @@ const FacilitatorDashboard = ({ user }) => {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: 4,
-          boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
           overflow: 'hidden',
           '&::before': {
             content: '""',

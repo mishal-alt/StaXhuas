@@ -113,7 +113,6 @@ const Reports = () => {
             alignItems: 'center', 
             flexWrap: 'wrap', 
             gap: 4,
-            boxShadow: '0 20px 60px rgba(232, 57, 29, 0.3)',
             overflow: 'hidden',
             '&::before': {
               content: '""',
@@ -156,7 +155,6 @@ const Reports = () => {
                   py: 2,
                   borderRadius: '16px 40px 16px 40px',
                   fontWeight: 900,
-                  boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
