@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Box, 
-  Typography, 
-  TextField, 
-  MenuItem, 
+import {
+  Box,
+  Typography,
+  TextField,
+  MenuItem,
   ThemeProvider,
   createTheme,
-  Divider
+  Divider,
+  InputAdornment,
+  IconButton,
+  Tooltip,
+  Autocomplete,
+  Menu,
+  Breadcrumbs,
+  Link
 } from '@mui/material';
 
 import AppShell from '../components/layout/AppShell';
@@ -16,6 +23,7 @@ import StudentAttendanceAndLeaves from '../features/attendance/StudentAttendance
 import * as batchApi from '../api/batches.api';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../utils/constants';
+import { Search, FilterList, Sort, School, NavigateNext } from '@mui/icons-material';
 
 // Custom theme to match Staxhaus brand
 const theme = createTheme({
@@ -55,6 +63,24 @@ const AttendanceAndLeaves = () => {
 
   const batches = batchesRes?.data || [];
   const [selectedBatch, setSelectedBatch] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Sort and Filter State
+  const [sortBy, setSortBy] = useState('name');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortAnchor, setSortAnchor] = useState(null);
+  const [filterAnchor, setFilterAnchor] = useState(null);
+
+  const handleSortClick = (event) => setSortAnchor(event.currentTarget);
+  const handleFilterClick = (event) => setFilterAnchor(event.currentTarget);
+  const handleSortClose = (value) => {
+    if (value) setSortBy(value);
+    setSortAnchor(null);
+  };
+  const handleFilterClose = (value) => {
+    if (value) setStatusFilter(value);
+    setFilterAnchor(null);
+  };
 
   if (isStudent) {
     return (
@@ -67,88 +93,170 @@ const AttendanceAndLeaves = () => {
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
-          
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 8 }}>
+
           {/* Header */}
-          <Box sx={{ 
-            position: 'relative', 
-            p: 6, 
-            borderRadius: '30px 150px 40px 120px', 
-            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
-            color: 'white',
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            flexWrap: 'wrap', 
-            gap: 4,
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: '-50%',
-              left: '-10%',
-              width: '120%',
-              height: '200%',
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
-              pointerEvents: 'none'
-            }
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
           }}>
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-                Student Management
-              </Typography>
-              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
-                Manage all students across different cohorts.
-              </Typography>
-            </Box>
-            
-            <TextField
-              select
-              label="Select Batch"
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
-              variant="outlined"
-              sx={{ 
-                width: 180,
-                zIndex: 1,
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'white',
-                  borderRadius: '12px 20px 12px 20px',
-                  height: 56,
-                  '& fieldset': { border: 'none' },
-                  '&:hover fieldset': { border: 'none' },
-                  '&.Mui-focused fieldset': { border: 'none' },
-                  boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-                },
-                '& .MuiInputLabel-root': { 
-                  color: 'rgba(255,255,255,0.8)', 
-                  fontWeight: 800,
-                  '&.Mui-focused': { color: 'white' },
-                  '&.MuiInputLabel-shrink': { 
-                    color: 'white', 
-                    transform: 'translate(14px, -28px) scale(0.75)',
-                  }
-                },
-                '& .MuiSelect-select': {
-                  fontWeight: 900,
-                  py: 1.5,
-                  color: '#1E2126'
-                }
-              }}
+            <Breadcrumbs
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />}
+              sx={{ mb: 1.5 }}
             >
-              <MenuItem value="all" sx={{ fontWeight: 800 }}>All Students</MenuItem>
-              {batches.map(b => (
-                <MenuItem key={b._id} value={b._id} sx={{ fontWeight: 800 }}>{b.name}</MenuItem>
-              ))}
-            </TextField>
+              <Link underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                DASHBOARD
+              </Link>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                STUDENTS
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{
+                bgcolor: 'primary.main',
+                color: 'white',
+                p: 1,
+                borderRadius: 2,
+                display: 'flex',
+                boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
+              }}>
+                <School fontSize="medium" />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', mb: 0.2, fontSize: '1.75rem', textTransform: 'none' }}>
+                  Student Management
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  Manage students, batches and performance
+                </Typography>
+              </Box>
+            </Box>
           </Box>
 
-          <Divider sx={{ opacity: 0.1 }} />
+
+
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 1.5,
+            px: 1,
+            mb: 2
+          }}>
+            <Autocomplete
+              size="small"
+              options={[{ _id: 'all', name: 'All Batches' }, ...batches]}
+              getOptionLabel={(option) => option.name || ''}
+              value={[{ _id: 'all', name: 'All Batches' }, ...batches].find(b => b._id === selectedBatch) || null}
+              onChange={(event, newValue) => {
+                setSelectedBatch(newValue ? newValue._id : 'all');
+              }}
+              sx={{ width: 250 }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Search Batch"
+                  InputProps={{
+                    ...params.InputProps,
+                    sx: { borderRadius: 2, bgcolor: 'background.paper' }
+                  }}
+                />
+              )}
+            />
+
+            <TextField
+              placeholder="Search students by name or email..."
+              size="small"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{ flex: 1 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search fontSize="small" />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 2,
+                  bgcolor: 'background.paper',
+                  '& fieldset': { border: '1px solid rgba(0,0,0,0.08)' }
+                }
+              }}
+            />
+            <Tooltip title="Filter">
+              <IconButton
+                size="small"
+                onClick={handleFilterClick}
+                sx={{
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  borderRadius: 2,
+                  p: 0.8,
+                  bgcolor: statusFilter !== 'all' ? 'primary.light' : 'background.paper',
+                  color: statusFilter !== 'all' ? 'primary.contrastText' : 'inherit'
+                }}
+              >
+                <FilterList fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Sort">
+              <IconButton
+                size="small"
+                onClick={handleSortClick}
+                sx={{
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  borderRadius: 2,
+                  p: 0.8,
+                  bgcolor: sortBy !== 'name' ? 'secondary.light' : 'background.paper',
+                  color: sortBy !== 'name' ? 'secondary.contrastText' : 'inherit'
+                }}
+              >
+                <Sort fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            {/* Filter Menu */}
+            <Menu
+              anchorEl={filterAnchor}
+              open={Boolean(filterAnchor)}
+              onClose={() => handleFilterClose()}
+              PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 150 } }}
+            >
+              <MenuItem onClick={() => handleFilterClose('all')} selected={statusFilter === 'all'}>All Status</MenuItem>
+              <MenuItem onClick={() => handleFilterClose('Active')} selected={statusFilter === 'Active'}>Active</MenuItem>
+              <MenuItem onClick={() => handleFilterClose('Inactive')} selected={statusFilter === 'Inactive'}>Inactive</MenuItem>
+              <MenuItem onClick={() => handleFilterClose('Suspended')} selected={statusFilter === 'Suspended'}>Suspended</MenuItem>
+              <MenuItem onClick={() => handleFilterClose('Terminated')} selected={statusFilter === 'Terminated'}>Terminated</MenuItem>
+            </Menu>
+
+            {/* Sort Menu */}
+            <Menu
+              anchorEl={sortAnchor}
+              open={Boolean(sortAnchor)}
+              onClose={() => handleSortClose()}
+              PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 150 } }}
+            >
+              <MenuItem onClick={() => handleSortClose('name')} selected={sortBy === 'name'}>Sort by Name</MenuItem>
+              <MenuItem onClick={() => handleSortClose('joinDate')} selected={sortBy === 'joinDate'}>Sort by Join Date</MenuItem>
+              <MenuItem onClick={() => handleSortClose('attendance')} selected={sortBy === 'attendance'}>Sort by Attendance</MenuItem>
+            </Menu>
+          </Box>
 
           {/* Content */}
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 0 }}>
             <Box>
-              <AttendanceRoster batchId={selectedBatch} />
+              <AttendanceRoster
+                batchId={selectedBatch}
+                searchQuery={searchQuery}
+                sortBy={sortBy}
+                statusFilter={statusFilter}
+              />
             </Box>
           </Box>
 

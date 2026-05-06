@@ -13,6 +13,7 @@ Box,
   Button,
   Stack,
   TextField,
+  InputAdornment,
   MenuItem,
   Dialog,
   DialogTitle,
@@ -27,10 +28,11 @@ Box,
   TableRow,
   Paper,
   Divider,
+  Pagination,
   ThemeProvider,
   createTheme,
-  InputAdornment,
-  Pagination
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
 import {
   Add,
@@ -42,7 +44,8 @@ import {
   Search,
   Edit,
   Delete,
-  Layers
+  Layers,
+  NavigateNext
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -181,53 +184,68 @@ const CoursesAndBatches = () => {
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 8 }}>
 
-          {/* Header - Brush Stroke Style */}
+          {/* Header */}
           <Box sx={{
-            position: 'relative',
-            p: 6,
-            borderRadius: '30px 150px 40px 120px',
-            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
-            color: 'white',
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 4,
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: '-50%',
-              left: '-10%',
-              width: '120%',
-              height: '200%',
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
-              pointerEvents: 'none'
-            }
+            gap: 2
           }}>
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-                Batch Management
-              </Typography>
-              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
-                High-level overview of cohort tracks and student enrollment.
-              </Typography>
+            <Box>
+              <Breadcrumbs 
+                separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+                sx={{ mb: 1.5 }}
+              >
+                <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                  DASHBOARD
+                </MuiLink>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                  BATCHES
+                </Typography>
+              </Breadcrumbs>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  p: 1, 
+                  borderRadius: 2, 
+                  display: 'flex', 
+                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)' 
+                }}>
+                  <Layers fontSize="medium" />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', mb: 0.2, fontSize: '1.75rem', textTransform: 'none' }}>
+                    Batch Management
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                    High-level overview of cohort tracks and student enrollment
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
-            <Stack direction="row" spacing={4} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
+
+            <Stack direction="row" spacing={4} alignItems="center">
               {isAdmin && (
                 <Button
                   variant="contained"
                   startIcon={<Add />}
                   onClick={() => setShowBatchForm(true)}
                   sx={{
-                    bgcolor: 'white',
-                    color: '#E8391D',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)', transform: 'translateY(-2px)' },
-                    px: 5,
-                    py: 2,
-                    borderRadius: '16px 40px 16px 40px',
-                    fontWeight: 900,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
                   }}
                 >
                   Create Batch

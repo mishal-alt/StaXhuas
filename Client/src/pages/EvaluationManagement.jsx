@@ -18,7 +18,9 @@ import {
   TableHead,
   TableRow,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
 import {
   Assessment,
@@ -28,7 +30,8 @@ import {
   Schedule,
   CheckCircle,
   Info,
-  Assignment
+  Assignment,
+  NavigateNext
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -82,37 +85,48 @@ const EvaluationManagement = () => {
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
 
-          {/* Header - Brush Stroke Style */}
-          <Box sx={{ 
-            position: 'relative', 
-            p: 6, 
-            borderRadius: '30px 150px 40px 120px', 
-            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
-            color: 'white',
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            flexWrap: 'wrap', 
-            gap: 4,
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: '-50%',
-              left: '-10%',
-              width: '120%',
-              height: '200%',
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
-              pointerEvents: 'none'
-            }
+          {/* Header */}
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
           }}>
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-                Module Evaluations
+            <Breadcrumbs 
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                DASHBOARD
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                EVALUATIONS
               </Typography>
-              <Typography variant="body1" color="inherit" sx={{ opacity: 0.9, fontWeight: 600, letterSpacing: '0.05em' }}>
-                Schedule interviews, assign interviewers, and record final scores.
-              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                bgcolor: 'primary.main', 
+                color: 'white', 
+                p: 1, 
+                borderRadius: 2, 
+                display: 'flex', 
+                boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)' 
+              }}>
+                <Assessment fontSize="medium" />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', mb: 0.2, fontSize: '1.75rem', textTransform: 'none' }}>
+                  Module Evaluations
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  Schedule interviews, assign interviewers, and record final scores
+                </Typography>
+              </Box>
             </Box>
           </Box>
 

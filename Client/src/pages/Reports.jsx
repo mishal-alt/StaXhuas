@@ -20,7 +20,9 @@ import {
   Chip,
   Divider,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
 import {
   TrendingUp,
@@ -30,7 +32,8 @@ import {
   Assessment,
   Download,
   DateRange,
-  MoreVert
+  MoreVert,
+  NavigateNext
 } from '@mui/icons-material';
 import { LineChart, BarChart } from '@mui/x-charts';
 
@@ -101,45 +104,67 @@ const Reports = () => {
         <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 6 }}>
 
           {/* Header */}
-          {/* Header - Brush Stroke Style */}
-          <Box sx={{ 
-            position: 'relative', 
-            p: 6, 
-            borderRadius: '30px 150px 40px 120px', 
-            background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
-            color: 'white',
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            flexWrap: 'wrap', 
-            gap: 4,
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: '-50%',
-              left: '-10%',
-              width: '120%',
-              height: '200%',
-              background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
-              pointerEvents: 'none'
-            }
+          {/* Header */}
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2
           }}>
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography variant="h4" color="inherit" sx={{ fontSize: { xs: '2rem', md: '3.5rem' }, textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-                Performance Analytics
-              </Typography>
+            <Box>
+              <Breadcrumbs 
+                separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+                sx={{ mb: 1.5 }}
+              >
+                <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                  DASHBOARD
+                </MuiLink>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                  REPORTS
+                </Typography>
+              </Breadcrumbs>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  p: 1, 
+                  borderRadius: 2, 
+                  display: 'flex', 
+                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)' 
+                }}>
+                  <Assessment fontSize="medium" />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', mb: 0.2, fontSize: '1.75rem', textTransform: 'none' }}>
+                    Performance Analytics
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                    Comprehensive overview of student and cohort performance
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
-            <Stack direction="row" spacing={3} sx={{ position: 'relative', zIndex: 1 }}>
+
+            <Stack direction="row" spacing={3}>
               <Button 
                 variant="outlined" 
                 startIcon={<DateRange />} 
                 sx={{ 
-                  color: 'white', 
-                  borderColor: 'rgba(255,255,255,0.5)',
-                  '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' },
-                  borderRadius: '12px 32px 12px 32px',
-                  fontWeight: 900
+                  color: 'text.primary', 
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1.5
                 }}
               >
                 Timeframe
@@ -148,14 +173,10 @@ const Reports = () => {
                 variant="contained" 
                 startIcon={<Download />}
                 sx={{ 
-                  bgcolor: 'white', 
-                  color: '#E8391D',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.9)', transform: 'translateY(-2px)' },
-                  px: 5,
-                  py: 2,
-                  borderRadius: '16px 40px 16px 40px',
-                  fontWeight: 900,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
                 }}
               >
                 Export Ledger

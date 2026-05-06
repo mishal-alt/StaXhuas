@@ -43,7 +43,9 @@ import {
   Email,
   Badge,
   CalendarMonth,
-  School
+  School,
+  FilterList,
+  Sort
 } from '@mui/icons-material';
 
 const INITIAL_STUDENTS = [
@@ -61,9 +63,9 @@ const INITIAL_STUDENTS = [
   { id: 12, name: 'Lekshmi S', email: 'lekshmi@staxhaus.com', status: 'Active', batch: 'B-1', joinDate: '2023-10-12', course: 'Full Stack Development', attendance: '94%' },
 ];
 
-const AttendanceRoster = ({ batchId }) => {
+const AttendanceRoster = ({ batchId, searchQuery = '', sortBy = 'name', statusFilter = 'all' }) => {
   const [students, setStudents] = useState(INITIAL_STUDENTS);
-  const [search, setSearch] = useState('');
+
   const [selectedStudent, setSelectedStudent] = useState(null);
   
   // Pagination State
@@ -84,10 +86,16 @@ const AttendanceRoster = ({ batchId }) => {
   const [editForm, setEditForm] = useState({ name: '', email: '', status: '', batch: '' });
 
   const filteredStudents = students.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
-                         s.email.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         s.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesBatch = batchId === 'all' || s.batch === batchId;
-    return matchesSearch && matchesBatch;
+    const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
+    return matchesSearch && matchesBatch && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    if (sortBy === 'joinDate') return new Date(b.joinDate) - new Date(a.joinDate);
+    if (sortBy === 'attendance') return parseInt(b.attendance) - parseInt(a.attendance);
+    return 0;
   });
 
   const paginatedStudents = filteredStudents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -166,33 +174,26 @@ const AttendanceRoster = ({ batchId }) => {
   return (
     <>
       <Card sx={{ borderRadius: 1, overflow: 'hidden', boxShadow: 'none', border: '1px solid rgba(0,0,0,0.05)' }}>
-        <Box sx={{ p: 4, bgcolor: 'action.hover', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
+        <Box sx={{ 
+          p: 3, 
+          background: 'rgba(0, 0, 0, 0.02)',
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          flexWrap: 'wrap', 
+          gap: 2
+        }}>
           <Box>
-            <Typography variant="h6" fontWeight={900} color="secondary">Student Roster</Typography>
-            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase' }}>
-              {batchId === 'all' ? 'All students across all batches' : `Students enrolled in ${batchId}`}
+            <Typography variant="subtitle1" fontWeight={700}>Student List</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {batchId === 'all' ? 'All active students' : `Current students in ${batchId}`}
             </Typography>
           </Box>
+
         </Box>
 
         <CardContent sx={{ p: 0 }}>
-          <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-            <TextField 
-              placeholder="Search by name or email..." 
-              size="small"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              sx={{ maxWidth: 400, flex: 1 }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-                sx: { borderRadius: 2 }
-              }}
-            />
-          </Box>
+
 
           <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>
             <Table>
@@ -374,7 +375,11 @@ const AttendanceRoster = ({ batchId }) => {
                     <Typography variant="caption" fontWeight={800} color="text.secondary">ATTENDANCE PERFORMANCE</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
                        <Box sx={{ flex: 1, height: 8, bgcolor: 'action.hover', borderRadius: 4, overflow: 'hidden' }}>
-                          <Box sx={{ width: selectedStudent?.attendance, height: '100%', bgcolor: 'primary.main' }} />
+                          <Box sx={{ 
+                            width: selectedStudent?.attendance, 
+                            height: '100%', 
+                            background: 'linear-gradient(90deg, #E8391D 0%, #FF5A36 100%)' 
+                          }} />
                        </Box>
                        <Typography variant="body2" fontWeight={900}>{selectedStudent?.attendance}</Typography>
                     </Box>
