@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
@@ -24,6 +24,8 @@ Box,
   ListItem,
   ListItemText,
   ListItemIcon,
+  Accordion,
+  AccordionSummary,
   AccordionDetails,
   Breadcrumbs,
   Link as MuiLink
@@ -40,8 +42,6 @@ import {
   Edit,
   Delete,
   AccessTime,
-  CheckCircle,
-  TrendingUp,
   NavigateNext
 } from '@mui/icons-material';
 
@@ -104,6 +104,7 @@ const CourseManager = () => {
   const [editingCourse, setEditingCourse] = useState(null);
   const [editingModule, setEditingModule] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
+  const detailsRef = useRef(null);
 
   const { data: coursesRes, isLoading: coursesLoading } = useQuery({
     queryKey: ['courses'],
@@ -288,82 +289,114 @@ const CourseManager = () => {
             </Button>
           </Box>
 
-          {/* Analytics Board - Curriculum Intel */}
-          <Grid container spacing={3} justifyContent="center">
-            {[
-              { label: 'Master Tracks', value: courses.length, icon: <School />, color: '#E8391D' },
-              { label: 'Active Tracks', value: courses.filter(c => c.isActive).length, icon: <CheckCircle />, color: '#1976d2' },
-              { label: 'Total Duration', value: courses.reduce((sum, c) => sum + (c.durationMonths || 0), 0) + ' Mo', icon: <AccessTime />, color: '#2e7d32' },
-              { label: 'Avg Duration', value: courses.length ? (courses.reduce((sum, c) => sum + (c.durationMonths || 0), 0) / courses.length).toFixed(1) + ' Mo' : '0 Mo', icon: <TrendingUp />, color: '#9c27b0' },
-            ].map((stat, i) => (
-              <Grid item xs={12} sm={3} md={3} lg={3} key={i}>
-                <Card sx={{ 
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                  '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
-                  borderRadius: '24px',
-                  border: '1px solid rgba(0,0,0,0.05)',
-                  height: '100%',
-                  bgcolor: 'white'
-                }}>
-                  <CardContent sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ p: 2, bgcolor: `${stat.color}10`, color: stat.color, borderRadius: 4 }}>
-                      {stat.icon}
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
-                        {stat.label.toUpperCase()}
-                      </Typography>
-                      <Typography variant="h4" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>{stat.value}</Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
 
-          <Grid container spacing={4} sx={{ mt: 1 }}>
-            {/* Courses List */}
-            <Grid item xs={12} md={3}>
-              <Stack spacing={3}>
-                <Typography variant="h6" color="secondary">Course Tracks</Typography>
-                <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 0, '&::-webkit-scrollbar': { display: 'none' }, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-                  <Stack spacing={2}>
-                    {courses.map((course) => (
-                      <Card
-                        key={course._id}
-                        onClick={() => setSelectedCourse(course)}
-                        sx={{
-                          cursor: 'pointer',
-                          border: selectedCourse?._id === course._id ? '2px solid #E8391D' : '2px solid transparent',
-                          transition: 'all 0.2s',
-                          '&:hover': { transform: 'translateX(8px)', borderColor: selectedCourse?._id === course._id ? '#E8391D' : 'rgba(0,0,0,0.1)' }
-                        }}
-                      >
-                        <CardContent sx={{ p: 3 }}>
-                          <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            <Box>
-                              <Typography variant="subtitle1" fontWeight={900}>{course.name}</Typography>
-                              <Typography variant="caption" color="text.secondary" fontWeight={700}>
-                                {course.durationMonths} MONTHS
-                              </Typography>
-                            </Box>
-                            <ChevronRight sx={{ color: selectedCourse?._id === course._id ? 'primary.main' : 'text.disabled' }} />
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {courses.length === 0 && (
-                      <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 6 }}>
-                        <Typography variant="body2" color="text.secondary">No courses found. Create your first course track.</Typography>
-                      </Paper>
-                    )}
-                  </Stack>
-                </Box>
-              </Stack>
-            </Grid>
+          <Box sx={{ mt: 2 }}>
+            <Stack spacing={3}>
 
-            {/* Course Detail / Modules */}
-            <Grid item xs={12} md={9}>
+              {/* Course Selection Cards - Top Wrapping Layout */}
+              <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: 2, 
+                pb: 2,
+                mx: -2,
+                px: 2
+              }}>
+                {courses.map((course) => (
+                  <Card
+                    key={course._id}
+                    onClick={() => {
+                      setSelectedCourse(course);
+                      setTimeout(() => {
+                        detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 100);
+                    }}
+                    sx={{
+                      minWidth: 230,
+                      maxWidth: 230,
+                      height: 140,
+                      flexShrink: 0,
+                      cursor: 'pointer',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      border: '2px solid',
+                      borderColor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(0,0,0,0.04)',
+                      background: selectedCourse?._id === course._id ? 'white' : 'white',
+                      boxShadow: selectedCourse?._id === course._id ? '0 12px 24px rgba(232, 57, 29, 0.12)' : '0 4px 12px rgba(0,0,0,0.03)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': { 
+                        transform: 'translateY(-6px)',
+                        boxShadow: '0 15px 30px rgba(0,0,0,0.08)',
+                        borderColor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(232, 57, 29, 0.3)'
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={900} sx={{ 
+                          lineHeight: 1.2, 
+                          mb: 0.5,
+                          color: selectedCourse?._id === course._id ? 'primary.main' : 'text.primary'
+                        }}>
+                          {course.name}
+                        </Typography>
+                        <Chip 
+                          label={`${course.durationMonths} MONTHS`} 
+                          size="small" 
+                          sx={{ 
+                            height: 20, 
+                            fontSize: '0.65rem', 
+                            fontWeight: 900,
+                            bgcolor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(0,0,0,0.05)',
+                            color: selectedCourse?._id === course._id ? 'white' : 'text.secondary'
+                          }} 
+                        />
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <ChevronRight sx={{ 
+                          color: selectedCourse?._id === course._id ? 'primary.main' : 'text.disabled',
+                          transform: selectedCourse?._id === course._id ? 'translateX(4px)' : 'none',
+                          transition: 'transform 0.2s'
+                        }} />
+                      </Box>
+
+                      {/* Subtle background decoration */}
+                      <School sx={{ 
+                        position: 'absolute', 
+                        right: -10, 
+                        bottom: -10, 
+                        fontSize: 80, 
+                        opacity: selectedCourse?._id === course._id ? 0.08 : 0.03, 
+                        color: 'primary.main',
+                        transform: 'rotate(-15deg)'
+                      }} />
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                {courses.length === 0 && (
+                  <Paper sx={{ 
+                    p: 4, 
+                    flexGrow: 1, 
+                    textAlign: 'center', 
+                    bgcolor: 'action.hover', 
+                    borderRadius: 4,
+                    border: '1px dashed rgba(0,0,0,0.1)'
+                  }}>
+                    <Typography variant="body2" color="text.secondary">No courses found. Create your first course track.</Typography>
+                  </Paper>
+                )}
+              </Box>
+            </Stack>
+          </Box>
+
+          <Divider sx={{ opacity: 0.6 }} />
+
+          <Box sx={{ mt: 1 }} ref={detailsRef}>
+            {/* Course Detail / Modules - Bottom Layout */}
+            <Box sx={{ width: '100%', scrollMarginTop: '20px' }}>
               {selectedCourse ? (
                 <Stack spacing={4}>
                   <Box sx={{
@@ -405,21 +438,34 @@ const CourseManager = () => {
                         <Delete sx={{ fontSize: 18 }} />
                       </IconButton>
                     </Stack>
-                    <School sx={{ position: 'absolute', right: -20, bottom: -20, fontSize: 180, opacity: 0.05, transform: 'rotate(-15deg)' }} />
-                  </Box>
-
-                  <Stack direction="row" spacing={24} alignItems="center">
-                    <Typography variant="h6" color="secondary">Modules & Learning Path</Typography>
+                    
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       size="small"
                       startIcon={<Add />}
                       onClick={() => setShowModuleForm(true)}
-                      sx={{ borderRadius: 2 }}
+                      sx={{ 
+                        position: 'absolute',
+                        bottom: 24,
+                        right: 24,
+                        zIndex: 2,
+                        borderRadius: 2,
+                        px: 3,
+                        bgcolor: 'white',
+                        color: 'secondary.main',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.9)', transform: 'translateY(-2px)' },
+                        transition: 'all 0.2s'
+                      }}
                     >
                       Add Module
                     </Button>
-                  </Stack>
+
+                    <School sx={{ position: 'absolute', right: -20, bottom: -20, fontSize: 180, opacity: 0.05, transform: 'rotate(-15deg)' }} />
+                  </Box>
+
+                  <Typography variant="h6" color="secondary" sx={{ fontWeight: 800, mt: 1 }}>
+                    Modules & Learning Path
+                  </Typography>
 
                   <Stack spacing={2}>
                     {modulesLoading ? (
@@ -527,26 +573,28 @@ const CourseManager = () => {
                 </Stack>
               ) : (
                 <Box sx={{
-                  height: '60vh',
-                  width: '700px',
+                  height: '40vh',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
                   textAlign: 'center',
                   gap: 3,
-                  px: 4
+                  px: 4,
+                  bgcolor: 'white',
+                  borderRadius: 4,
+                  border: '2px dashed rgba(0,0,0,0.05)'
                 }}>
-                  <Box sx={{ p: 3, borderRadius: '50%' }}>
+                  <Box sx={{ p: 3, bgcolor: 'action.hover', borderRadius: '50%' }}>
                     <School sx={{ fontSize: 60, color: 'text.disabled' }} />
                   </Box>
                   <Typography variant="h6" color="text.disabled" fontWeight={800} sx={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                    Select a course track to manage
+                    Select a course track to manage details
                   </Typography>
                 </Box>
               )}
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           {/* Dialogs */}
           <Dialog open={showCourseForm} onClose={() => { setShowCourseForm(false); setEditingCourse(null); resetCourse(); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
