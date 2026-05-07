@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CircularProgress,
@@ -18,8 +17,11 @@ Box,
   TextField,
   Rating,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { 
   ChevronLeft, 
   School, 
@@ -33,12 +35,15 @@ import {
   AssignmentInd,
   Feedback,
   ThumbUp,
-  ThumbDown
+  ThumbDown,
+  NavigateNext
 } from '@mui/icons-material';
 import { toast } from "sonner";
 
 import AppShell from '../components/layout/AppShell';
 import * as interviewApi from '../api/interviews.api';
+import { useAuth } from '../context/AuthContext';
+import { ROLES } from '../utils/constants';
 
 // Custom theme to match Staxhaus brand
 const theme = createTheme({
@@ -78,9 +83,13 @@ const theme = createTheme({
 });
 
 const InterviewDetail = () => {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const isInterviewer = user?.role === ROLES.INTERVIEWER;
+  const assessmentPath = isInterviewer ? '/my-interviews' : '/interviews';
   
   const [formData, setFormData] = useState({
     technicalRating: 0,
@@ -147,13 +156,73 @@ const InterviewDetail = () => {
       <AppShell>
         <Box sx={{ maxWidth: '1000px', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4, pb: 8 }}>
           
-          <Button 
-            startIcon={<ChevronLeft />} 
-            onClick={() => navigate('/my-interviews')}
-            sx={{ alignSelf: 'flex-start', color: 'text.secondary', fontWeight: 800 }}
-          >
-            Assessment Queue
-          </Button>
+          {/* Header */}
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
+          }}>
+            <Breadcrumbs 
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={RouterLink} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                DASHBOARD
+              </MuiLink>
+              <MuiLink 
+                component={RouterLink} 
+                to={assessmentPath} 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                ASSESSMENTS
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                EVALUATION
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <IconButton 
+                onClick={() => navigate(assessmentPath)}
+                sx={{ bgcolor: 'rgba(0,0,0,0.03)', borderRadius: 2 }}
+              >
+                <ChevronLeft />
+              </IconButton>
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 3,
+                bgcolor: 'rgba(232, 57, 29, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'primary.main'
+              }}>
+                <AssignmentInd />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} sx={{ fontSize: '1.5rem', color: '#1E2126', lineHeight: 1.2 }}>
+                  Module Evaluation
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Score and provide feedback for {interview.student?.name}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
 
           <Grid container spacing={4}>
             {/* Sidebar info */}

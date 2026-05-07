@@ -1,9 +1,9 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   CircularProgress,
-Box,
+  Box,
   Typography,
   Grid,
   Card,
@@ -15,7 +15,9 @@ Box,
   Paper,
   ThemeProvider,
   createTheme,
-  IconButton
+  IconButton,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
 import {
   People,
@@ -25,7 +27,9 @@ import {
   ArrowForward,
   CalendarToday,
   BarChart,
-  AssignmentInd
+  AssignmentInd,
+  NavigateNext,
+  Dashboard as DashboardIcon
 } from '@mui/icons-material';
 
 import * as interviewApi from '../../api/interviews.api';
@@ -85,42 +89,78 @@ const InterviewerDashboard = ({ user }) => {
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
-        {/* Welcome Header - Brush Stroke Style */}
-        <Box sx={{ 
-          position: 'relative', 
-          p: 6, 
-          borderRadius: '30px 150px 40px 120px', 
-          background: 'linear-gradient(115deg, #E8391D 0%, #FF5A36 100%)',
-          color: 'white',
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          flexWrap: 'wrap', 
-          gap: 4,
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: '-50%',
-            left: '-10%',
-            width: '120%',
-            height: '200%',
-            background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 40%)',
-            pointerEvents: 'none'
-          }
+        {/* Header */}
+        <Box sx={{
+          pt: 4,
+          pb: 3,
+          px: 6,
+          mx: -6,
+          mt: -6,
+          background: 'white',
+          borderBottom: '1px solid #E5E7EB',
+          mb: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
         }}>
-          <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Avatar sx={{ width: 100, height: 100, bgcolor: 'white', color: '#E8391D', fontSize: '2.5rem', fontWeight: 900, borderRadius: '24px 48px 24px 48px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>{user?.name?.[0]}</Avatar>
-            <Box>
-              <Typography variant="caption" color="inherit" fontWeight={900} sx={{ letterSpacing: '0.2em', opacity: 0.8 }}>EVALUATOR PORTAL</Typography>
-              <Typography variant="h4" color="inherit" sx={{ fontSize: '3rem', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>Welcome, {user?.name}</Typography>
-              <Typography variant="body2" color="inherit" sx={{ opacity: 0.9, fontWeight: 600 }}>You have {pendingInterviews.length} pending evaluations to process today.</Typography>
+          <Box>
+            <Breadcrumbs
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />}
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={RouterLink} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                STAXHAUS
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                DASHBOARD
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                bgcolor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
+              }}>
+                <DashboardIcon />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', mb: 0.2, fontSize: '1.75rem', textTransform: 'none' }}>
+                  Evaluator Dashboard
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  Welcome back, <b>{user?.name}</b>. You have {pendingInterviews.length} pending evaluations.
+                </Typography>
+              </Box>
             </Box>
           </Box>
-          <Box sx={{ display: { xs: 'none', md: 'block' }, textAlign: 'right', position: 'relative', zIndex: 1 }}>
-            <Typography variant="caption" fontWeight={900} color="inherit" sx={{ letterSpacing: '0.1em', opacity: 0.8 }}>SESSION CLOCK</Typography>
-            <Typography variant="h6" fontWeight={900}>LIVE SYNC ACTIVE</Typography>
-          </Box>
+
+          <Chip
+            icon={<CalendarToday sx={{ color: 'primary.main !important' }} />}
+            label={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}
+            sx={{
+              fontWeight: 900,
+              px: 2,
+              bgcolor: 'white',
+              border: '1px solid #E5E7EB',
+              borderRadius: 3,
+              fontFamily: 'Outfit'
+            }}
+          />
         </Box>
 
         {/* Quick Stats */}

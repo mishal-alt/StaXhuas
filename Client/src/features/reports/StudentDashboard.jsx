@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link as RouterLink } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -12,7 +13,9 @@ import {
   ThemeProvider,
   createTheme,
   Divider,
-  Paper
+  Paper,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
 import { 
   School, 
@@ -24,7 +27,9 @@ import {
   TrendingUp,
   Stars,
   GroupWork,
-  CheckCircle
+  CheckCircle,
+  NavigateNext,
+  Dashboard as DashboardIcon
 } from '@mui/icons-material';
 import { PieChart } from '@mui/x-charts';
 
@@ -70,22 +75,79 @@ const StudentDashboard = ({ user }) => {
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 12 }}>
         
-        {/* Welcome Header */}
-        <Card sx={{ bgcolor: 'white', overflow: 'hidden', position: 'relative' }}>
-          <Box sx={{ position: 'absolute', top: 0, right: 0, width: 250, height: 250, bgcolor: 'rgba(232, 57, 29, 0.03)', borderRadius: '0 0 0 100%' }} />
-          <CardContent sx={{ p: 6, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 6, alignItems: 'center', position: 'relative' }}>
-             <Avatar sx={{ width: 100, height: 100, bgcolor: 'secondary.main', fontSize: '2.5rem', fontWeight: 900, borderRadius: 5 }}>{user?.name?.[0]}</Avatar>
-             <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
-               <Typography variant="caption" color="primary" fontWeight={900} sx={{ letterSpacing: '0.2em' }}>WELCOME TO STAXHAUS</Typography>
-               <Typography variant="h4" color="secondary" sx={{ mt: 0.5 }}>Hi {user?.name.split(' ')[0]},</Typography>
-               <Stack direction="row" spacing={3} sx={{ mt: 2, justifyContent: { xs: 'center', md: 'flex-start' } }}>
-                  <Chip icon={<GroupWork sx={{ fontSize: 16 }} />} label="BATCH: C58" size="small" variant="outlined" sx={{ fontWeight: 900, borderRadius: 2 }} />
-                  <Chip icon={<CalendarToday sx={{ fontSize: 16 }} />} label="WEEK: 23" size="small" variant="outlined" sx={{ fontWeight: 900, borderRadius: 2 }} />
-                  <Chip label="ACTIVE" size="small" color="success" sx={{ fontWeight: 900, borderRadius: 2 }} />
-               </Stack>
-             </Box>
-          </CardContent>
-        </Card>
+        {/* Header */}
+        <Box sx={{
+          pt: 4,
+          pb: 3,
+          px: 6,
+          mx: -6,
+          mt: -6,
+          background: 'white',
+          borderBottom: '1px solid #E5E7EB',
+          mb: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
+        }}>
+          <Box>
+            <Breadcrumbs
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />}
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={RouterLink} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                STAXHAUS
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                DASHBOARD
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                bgcolor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
+              }}>
+                <DashboardIcon />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', mb: 0.2, fontSize: '1.75rem', textTransform: 'none' }}>
+                  Student Dashboard
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  Hi {user?.name.split(' ')[0]}, welcome back to your academic portal.
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Chip
+            icon={<CalendarToday sx={{ color: 'primary.main !important' }} />}
+            label={new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}
+            sx={{
+              fontWeight: 900,
+              px: 2,
+              bgcolor: 'white',
+              border: '1px solid #E5E7EB',
+              borderRadius: 3,
+              fontFamily: 'Outfit'
+            }}
+          />
+        </Box>
 
         <Grid container spacing={4}>
            {/* Left Column: Stats & Lists */}

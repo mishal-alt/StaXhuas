@@ -24,6 +24,7 @@ import {
   Breadcrumbs,
   Link as MuiLink
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import {
   Send,
   Refresh,
@@ -101,15 +102,15 @@ const Invitations = () => {
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
-        <Box sx={{ py: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Box sx={{ pb: 3, display: 'flex', flexDirection: 'column', gap: 4 }}>
 
           {/* Header */}
           <Box sx={{
-            pt: 4,
-            pb: 3,
+            pt: 3,
+            pb: 2,
             px: 6,
             mx: -6,
-            mt: -6,
+            mt: -4.5,
             background: 'white',
             borderBottom: '1px solid #E5E7EB',
             mb: 3,
@@ -121,25 +122,31 @@ const Invitations = () => {
           }}>
             <Box>
               <Breadcrumbs 
-                separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
-                sx={{ mb: 1.5 }}
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={Link} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
               >
-                <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
-                  DASHBOARD
-                </MuiLink>
-                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
-                  INVITATIONS
-                </Typography>
-              </Breadcrumbs>
+                DASHBOARD
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                ONBOARDING
+              </Typography>
+            </Breadcrumbs>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ 
-                  bgcolor: 'primary.main', 
-                  color: 'white', 
-                  p: 1, 
-                  borderRadius: 2, 
-                  display: 'flex', 
-                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)' 
+                <Box sx={{
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  p: 1,
+                  borderRadius: 2,
+                  display: 'flex',
+                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
                 }}>
                   <Mail fontSize="medium" />
                 </Box>
@@ -154,8 +161,8 @@ const Invitations = () => {
               </Box>
             </Box>
 
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               startIcon={<Send />}
               sx={{
                 px: 4,
@@ -168,54 +175,87 @@ const Invitations = () => {
             </Button>
           </Box>
 
-          {/* KPI Section */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <Card sx={{ borderLeft: '6px solid #E8391D' }}>
-                <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                      PENDING INVITES
-                    </Typography>
-                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>08</Typography>
+          {/* KPI Grid - Strictly 4-column layout */}
+          <Box sx={{ 
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 1.5, md: 2 },
+            mb: 2
+          }}>
+            {[
+              { label: 'Total Sent', value: '34', icon: <Mail />, color: '#1E2126' },
+              { label: 'Pending Invites', value: '08', icon: <Schedule />, color: '#E8391D' },
+              { label: 'Accepted (Month)', value: '24', icon: <CheckCircle />, color: '#2e7d32' },
+              { label: 'Expired Links', value: '02', icon: <History />, color: '#9e9e9e' },
+            ].map((stat, i) => (
+              <Card key={i} sx={{
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                borderRadius: '24px',
+                border: '1px solid rgba(0,0,0,0.05)',
+                height: { xs: 80, sm: 100 },
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: 0,
+                overflow: 'hidden'
+              }}>
+                <CardContent sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 1.5, md: 2 },
+                  width: '100%',
+                  '&:last-child': { pb: { xs: 1.5, sm: 2 } }
+                }}>
+                  <Box sx={{ 
+                    p: { xs: 1, sm: 1.2, md: 1.5 }, 
+                    bgcolor: `${stat.color}10`, 
+                    color: stat.color, 
+                    borderRadius: 2.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {React.cloneElement(stat.icon, { sx: { fontSize: { xs: 18, sm: 20, md: 22 } } })}
                   </Box>
-                  <Box sx={{ p: 2, bgcolor: 'rgba(232, 57, 29, 0.05)', color: '#E8391D', borderRadius: 4 }}>
-                    <Schedule fontSize="large" />
+                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                    <Typography 
+                      variant="caption" 
+                      fontWeight={900} 
+                      color="text.secondary" 
+                      sx={{ 
+                        letterSpacing: '0.05em', 
+                        display: 'block',
+                        fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.7rem' },
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.label.toUpperCase()}
+                    </Typography>
+                    <Typography 
+                      variant="h4" 
+                      fontWeight={900} 
+                      sx={{ 
+                        fontFamily: 'Outfit', 
+                        color: 'secondary.main',
+                        fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.8rem' },
+                        mt: 0.3,
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card sx={{ borderLeft: '6px solid #2e7d32' }}>
-                <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                      ACCEPTED (MONTH)
-                    </Typography>
-                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>24</Typography>
-                  </Box>
-                  <Box sx={{ p: 2, bgcolor: 'rgba(46, 125, 50, 0.05)', color: '#2e7d32', borderRadius: 4 }}>
-                    <CheckCircle fontSize="large" />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card sx={{ borderLeft: '6px solid #9e9e9e' }}>
-                <CardContent sx={{ p: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                      EXPIRED LINKS
-                    </Typography>
-                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>02</Typography>
-                  </Box>
-                  <Box sx={{ p: 2, bgcolor: 'rgba(0, 0, 0, 0.05)', color: '#9e9e9e', borderRadius: 4 }}>
-                    <History fontSize="large" />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+            ))}
+          </Box>
 
           {/* Main Table Section */}
           <Card sx={{ overflow: 'hidden' }}>

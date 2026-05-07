@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CircularProgress,
@@ -181,10 +181,22 @@ const BatchDetail = () => {
               separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
               sx={{ mb: 1.5 }}
             >
-              <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+              <MuiLink 
+                component={Link} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
                 DASHBOARD
               </MuiLink>
-              <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+              <MuiLink 
+                component={Link} 
+                to="/courses" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
                 BATCHES
               </MuiLink>
               <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>

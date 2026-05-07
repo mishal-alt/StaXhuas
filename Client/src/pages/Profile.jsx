@@ -15,8 +15,11 @@ import {
   IconButton,
   LinearProgress,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { 
   Mail, 
   Phone, 
@@ -30,7 +33,8 @@ import {
   Description,
   Terminal,
   BarChart,
-  VerifiedUser
+  VerifiedUser,
+  NavigateNext
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -82,6 +86,59 @@ const Profile = () => {
     <ThemeProvider theme={theme}>
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
+          
+          {/* Header */}
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
+          }}>
+            <Breadcrumbs 
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={RouterLink} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                DASHBOARD
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                MY PROFILE
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 3,
+                bgcolor: 'rgba(232, 57, 29, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'primary.main'
+              }}>
+                <VerifiedUser />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} sx={{ fontSize: '1.5rem', color: '#1E2126', lineHeight: 1.2 }}>
+                  My Identity
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Manage your personal information and professional credentials.
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
           
           {/* Hero Profile Header */}
           <Card sx={{ position: 'relative', overflow: 'hidden' }}>

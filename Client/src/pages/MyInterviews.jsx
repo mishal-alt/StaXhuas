@@ -1,36 +1,39 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   CircularProgress,
-Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Button, 
-  Stack, 
-  TextField, 
-  InputAdornment, 
-  Chip, 
-  IconButton, 
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Stack,
+  TextField,
+  InputAdornment,
+  Chip,
+  IconButton,
   Divider,
   Paper,
   ThemeProvider,
   createTheme,
-  Avatar
+  Avatar,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
-import { 
-  Search, 
-  FilterList, 
-  ChevronRight, 
-  CalendarToday, 
-  Schedule, 
-  Group, 
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import {
+  Search,
+  FilterList,
+  ChevronRight,
+  CalendarToday,
+  Schedule,
+  Group,
   School,
   Assessment,
-  EventBusy
+  EventBusy,
+  NavigateNext
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -95,32 +98,75 @@ const MyInterviews = () => {
     <ThemeProvider theme={theme}>
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
-          
+
           {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 4 }}>
-            <Box>
-              <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
-                Assessment Center
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
+          }}>
+            <Breadcrumbs
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />}
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink
+                component={RouterLink}
+                to="/dashboard"
+                underline="none"
+                color="text.secondary"
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                DASHBOARD
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                ASSESSMENT CENTER
               </Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                Track and conduct technical assessments assigned to you.
-              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 3,
+                  bgcolor: 'rgba(232, 57, 29, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'primary.main'
+                }}>
+                  <Assessment />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight={900} sx={{ fontSize: '1.5rem', color: '#1E2126', lineHeight: 1.2 }}>
+                    Assessment Center
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    Track and conduct technical assessments assigned to you.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', md: 'auto' } }}>
+                <TextField
+                  placeholder="Search student..."
+                  size="small"
+                  sx={{ bgcolor: 'white', width: { xs: '100%', md: 250 } }}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start"><Search /></InputAdornment>,
+                    sx: { borderRadius: 4 }
+                  }}
+                />
+                <IconButton sx={{ bgcolor: 'white', border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                  <FilterList />
+                </IconButton>
+              </Stack>
             </Box>
-            
-            <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', md: 'auto' } }}>
-              <TextField 
-                placeholder="Search student..." 
-                size="small"
-                sx={{ bgcolor: 'white', width: { xs: '100%', md: 250 } }}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><Search /></InputAdornment>,
-                  sx: { borderRadius: 4 }
-                }}
-              />
-              <IconButton sx={{ bgcolor: 'white', border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
-                <FilterList />
-              </IconButton>
-            </Stack>
           </Box>
 
           <Divider sx={{ opacity: 0.1 }} />
@@ -133,11 +179,11 @@ const MyInterviews = () => {
               </Box>
             ) : (
               interviews.map((interview) => (
-                <Card 
-                  key={interview._id} 
+                <Card
+                  key={interview._id}
                   onClick={() => navigate(`/interviews/${interview._id}`)}
-                  sx={{ 
-                    cursor: 'pointer', 
+                  sx={{
+                    cursor: 'pointer',
                     transition: 'all 0.3s',
                     '&:hover': { transform: 'scale(1.01)', borderColor: 'primary.main', boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }
                   }}
@@ -182,14 +228,14 @@ const MyInterviews = () => {
 
                       <Grid item xs={12} md={5}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pl: { md: 4 }, borderLeft: { md: '1px solid' }, borderColor: 'divider' }}>
-                           <Box>
-                              <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block' }}>MODULE ASSESSMENT</Typography>
-                              <Typography variant="body2" fontWeight={800} color="secondary">{interview.module?.name}</Typography>
-                           </Box>
-                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main' }}>
-                              <Typography variant="button" sx={{ fontWeight: 900 }}>Details</Typography>
-                              <ChevronRight />
-                           </Box>
+                          <Box>
+                            <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em', display: 'block' }}>MODULE ASSESSMENT</Typography>
+                            <Typography variant="body2" fontWeight={800} color="secondary">{interview.module?.name}</Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'primary.main' }}>
+                            <Typography variant="button" sx={{ fontWeight: 900 }}>Details</Typography>
+                            <ChevronRight />
+                          </Box>
                         </Stack>
                       </Grid>
                     </Grid>

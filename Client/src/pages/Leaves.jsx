@@ -19,7 +19,9 @@ import {
   TableHead,
   TableRow,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
 import { 
   CalendarMonth, 
@@ -28,8 +30,10 @@ import {
   Schedule, 
   Description,
   History,
-  AssignmentTurnedIn
+  AssignmentTurnedIn,
+  NavigateNext
 } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 
 import AppShell from '../components/layout/AppShell';
 
@@ -83,13 +87,56 @@ const Leaves = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
           
           {/* Header */}
-          <Box>
-            <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>
-              Leave Management
-            </Typography>
-            <Typography variant="body1" color="text.secondary" fontWeight={600}>
-              Review and manage student absence requests based on batch quotas.
-            </Typography>
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
+          }}>
+            <Breadcrumbs 
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={Link} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                DASHBOARD
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                LEAVES
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 3,
+                bgcolor: 'rgba(232, 57, 29, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'primary.main'
+              }}>
+                <CalendarMonth />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} sx={{ fontSize: '1.5rem', color: '#1E2126', lineHeight: 1.2 }}>
+                  Leave Management
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Review and manage student absence requests based on batch quotas.
+                </Typography>
+              </Box>
+            </Box>
           </Box>
 
           {/* Stats Grid */}

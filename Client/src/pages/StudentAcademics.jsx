@@ -14,8 +14,11 @@ import {
   LinearProgress,
   ThemeProvider,
   createTheme,
-  Button
+  Button,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { 
   BarChart as BarChartIcon, 
   School, 
@@ -26,7 +29,8 @@ import {
   Message,
   Assessment,
   CalendarToday,
-  GroupWork
+  GroupWork,
+  NavigateNext
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -93,9 +97,56 @@ const StudentAcademics = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 12 }}>
           
           {/* Header */}
-          <Box>
-            <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>My Academic Profile</Typography>
-            <Typography variant="body1" color="text.secondary" fontWeight={600}>Review your module-wise performance and evaluation history.</Typography>
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
+          }}>
+            <Breadcrumbs 
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={RouterLink} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                DASHBOARD
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                ACADEMICS
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 3,
+                bgcolor: 'rgba(232, 57, 29, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'primary.main'
+              }}>
+                <School />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight={900} sx={{ fontSize: '1.5rem', color: '#1E2126', lineHeight: 1.2 }}>
+                  My Academic Profile
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Review your module-wise performance and evaluation history.
+                </Typography>
+              </Box>
+            </Box>
           </Box>
 
           {/* Current Module Highlight */}

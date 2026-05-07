@@ -6,7 +6,7 @@ import AcceptInvite from '../pages/AcceptInvite';
 import Dashboard from '../pages/Dashboard';
 import CoursesAndBatches from '../pages/CoursesAndBatches';
 import BatchDetail from '../pages/BatchDetail';
-import AttendanceAndLeaves from '../pages/AttendanceAndLeaves';
+import StudentManagement from '../pages/StudentManagement';
 import ScrumAndInterviews from '../pages/ScrumAndInterviews';
 import StaffManagement from '../pages/StaffManagement';
 import StaffProfile from '../pages/StaffProfile';
@@ -44,7 +44,7 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/courses" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR]}><CoursesAndBatches /></ProtectedRoute>} />
       <Route path="/batches/:id" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR]}><BatchDetail /></ProtectedRoute>} />
-      <Route path="/attendance" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR, ROLES.STUDENT]}><AttendanceAndLeaves /></ProtectedRoute>} />
+      <Route path="/student-management" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR, ROLES.STUDENT]}><StudentManagement /></ProtectedRoute>} />
       <Route path="/leaves" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR, ROLES.STUDENT]}><Leaves /></ProtectedRoute>} />
       <Route path="/students" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR]}><Students /></ProtectedRoute>} />
       <Route path="/scrum" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR]}><ScrumManagement /></ProtectedRoute>} />

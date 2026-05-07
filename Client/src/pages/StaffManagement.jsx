@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
 import {
   CircularProgress,
-Box,
+  Box,
   Typography,
   Grid,
   Card,
@@ -23,7 +23,7 @@ Box,
   IconButton,
   InputAdornment,
   Pagination,
-  Collapse,
+  Dialog,
   Breadcrumbs,
   Link as MuiLink
 } from '@mui/material';
@@ -42,7 +42,9 @@ import {
   Edit,
   Delete,
   AccountCircle,
-  NavigateNext
+  NavigateNext,
+  FilterList,
+  Tune
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -91,6 +93,7 @@ const StaffManagement = () => {
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [page, setPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -154,10 +157,12 @@ const StaffManagement = () => {
 
   const staff = usersRes || [];
 
-  const filteredStaff = staff.filter(member =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStaff = staff.filter(member => {
+    const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   const paginatedStaff = filteredStaff.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
@@ -189,11 +194,17 @@ const StaffManagement = () => {
             gap: 2
           }}>
             <Box>
-              <Breadcrumbs 
-                separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              <Breadcrumbs
+                separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />}
                 sx={{ mb: 1.5 }}
               >
-                <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                <MuiLink
+                  component={Link}
+                  to="/dashboard"
+                  underline="none"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+                >
                   DASHBOARD
                 </MuiLink>
                 <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
@@ -202,13 +213,13 @@ const StaffManagement = () => {
               </Breadcrumbs>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ 
-                  bgcolor: 'primary.main', 
-                  color: 'white', 
-                  p: 1, 
-                  borderRadius: 2, 
-                  display: 'flex', 
-                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)' 
+                <Box sx={{
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  p: 1,
+                  borderRadius: 2,
+                  display: 'flex',
+                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
                 }}>
                   <SupervisorAccount fontSize="medium" />
                 </Box>
@@ -225,8 +236,8 @@ const StaffManagement = () => {
 
             <Button
               variant="contained"
-              onClick={() => setShowInviteForm(!showInviteForm)}
-              startIcon={showInviteForm ? <Close /> : <Add />}
+              onClick={() => setShowInviteForm(true)}
+              startIcon={<Add />}
               sx={{
                 px: 4,
                 py: 1.5,
@@ -234,94 +245,168 @@ const StaffManagement = () => {
                 boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
               }}
             >
-              {showInviteForm ? 'Cancel' : 'Invite Staff'}
+              Invite Staff
             </Button>
           </Box>
 
-          {/* KPI Grid - Real Data Analysis */}
-          <Grid container spacing={3} justifyContent="center">
+          {/* KPI Grid - Strictly 4-column layout */}
+          <Box sx={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 1.5, md: 2 },
+            mb: 2
+          }}>
             {[
               { label: 'Total Team', value: staff.length, icon: <SupervisorAccount />, color: '#1E2126' },
               { label: 'Facilitators', value: staff.filter(u => u.role === 'facilitator').length, icon: <AccountCircle />, color: '#E8391D' },
               { label: 'Interviewers', value: staff.filter(u => u.role === 'interviewer').length, icon: <Shield />, color: '#1976d2' },
               { label: 'Open Invites', value: invitesRes?.data?.length || 0, icon: <Mail />, color: '#ed6c02' },
             ].map((stat, i) => (
-              <Grid item xs={12} sm={3} md={3} lg={3} key={i}>
-                <Card sx={{
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
-                  borderRadius: '24px',
-                  border: '1px solid rgba(0,0,0,0.05)',
-                  height: '100%'
+              <Card key={i} sx={{
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                borderRadius: '24px',
+                border: '1px solid rgba(0,0,0,0.05)',
+                height: { xs: 80, sm: 100 },
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: 0,
+                overflow: 'hidden'
+              }}>
+                <CardContent sx={{
+                  p: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: { xs: 1, sm: 1.5, md: 2 },
+                  width: '100%',
+                  '&:last-child': { pb: { xs: 1.5, sm: 2 } }
                 }}>
-                  <CardContent sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ p: 2, bgcolor: `${stat.color}10`, color: stat.color, borderRadius: 4 }}>
-                      {stat.icon}
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
-                        {stat.label.toUpperCase()}
-                      </Typography>
-                      <Typography variant="h4" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>{stat.value}</Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+                  <Box sx={{
+                    p: { xs: 1, sm: 1.2, md: 1.5 },
+                    bgcolor: `${stat.color}10`,
+                    color: stat.color,
+                    borderRadius: 2.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {React.cloneElement(stat.icon, { sx: { fontSize: { xs: 18, sm: 20, md: 22 } } })}
+                  </Box>
+                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                    <Typography
+                      variant="caption"
+                      fontWeight={900}
+                      color="text.secondary"
+                      sx={{
+                        letterSpacing: '0.05em',
+                        display: 'block',
+                        fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.7rem' },
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.label.toUpperCase()}
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      fontWeight={900}
+                      sx={{
+                        fontFamily: 'Outfit',
+                        color: 'secondary.main',
+                        fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.8rem' },
+                        mt: 0.3,
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </Grid>
+          </Box>
 
-          <Collapse in={showInviteForm}>
-            <Card sx={{ border: '2px solid', borderColor: 'primary.main', bgcolor: 'rgba(232, 57, 29, 0.02)' }}>
-              <CardContent sx={{ p: 4 }}>
-                <Box component="form" onSubmit={handleSubmit((data) => inviteMutation.mutate(data))} sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                  <TextField
-                    label="Full Name"
-                    placeholder="John Doe"
-                    size="small"
-                    {...register('name', { required: true })}
-                    sx={{ flex: 1, minWidth: 200, '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: 3 } }}
-                  />
-                  <TextField
-                    label="Email Address"
-                    type="email"
-                    placeholder="john@example.com"
-                    size="small"
-                    {...register('email', { required: true })}
-                    sx={{ flex: 1, minWidth: 200, '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: 3 } }}
-                  />
-                  <TextField
-                    select
-                    label="Assign Role"
-                    defaultValue={ROLES.FACILITATOR}
-                    size="small"
-                    {...register('role', { required: true })}
-                    sx={{ width: 180, '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: 3 } }}
+          {/* Invite Staff Dialog */}
+          <Dialog
+            open={showInviteForm}
+            onClose={() => { setShowInviteForm(false); reset(); }}
+            maxWidth="sm"
+            fullWidth
+            PaperProps={{ sx: { borderRadius: 4 } }}
+          >
+            <Box sx={{ p: 4 }}>
+              <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>
+                Invite New Staff
+              </Typography>
+              <Box
+                component="form"
+                onSubmit={handleSubmit((data) => inviteMutation.mutate(data))}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+              >
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  placeholder="e.g. John Doe"
+                  {...register('name', { required: true })}
+                />
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  type="email"
+                  placeholder="e.g. john@staxhaus.com"
+                  {...register('email', { required: true })}
+                />
+                <TextField
+                  select
+                  fullWidth
+                  label="Assign Role"
+                  defaultValue={ROLES.FACILITATOR}
+                  {...register('role', { required: true })}
+                >
+                  <MenuItem value={ROLES.FACILITATOR}>Facilitator</MenuItem>
+                  <MenuItem value={ROLES.INTERVIEWER}>Interviewer</MenuItem>
+                </TextField>
+
+                <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
+                  <Button
+                    onClick={() => { setShowInviteForm(false); reset(); }}
+                    color="secondary"
                   >
-                    <MenuItem value={ROLES.FACILITATOR}>Facilitator</MenuItem>
-                    <MenuItem value={ROLES.INTERVIEWER}>Interviewer</MenuItem>
-                  </TextField>
+                    Cancel
+                  </Button>
                   <Button
                     type="submit"
                     variant="contained"
-                    color="primary"
-                    startIcon={<Send />}
+                    disableElevation
                     disabled={inviteMutation.isPending}
+                    startIcon={<Send />}
                   >
-                    Send Invitation
+                    {inviteMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Send Invitation'}
                   </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Collapse>
+                </Stack>
+              </Box>
+            </Box>
+          </Dialog>
 
 
-          {/* Search Bar */}
-          <Box sx={{ mb: 1 }}>
+          {/* Search & Filter Bar */}
+          <Box sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+            mb: 1
+          }}>
             <TextField
               fullWidth
               placeholder="Search staff by name or email..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+              sx={{ flex: 1 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -337,6 +422,82 @@ const StaffManagement = () => {
                 }
               }}
             />
+            <TextField
+              select
+              value={roleFilter}
+              onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
+              sx={{
+                minWidth: { xs: '100%', sm: 240 },
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  bgcolor: 'white',
+                  '& fieldset': { border: '1px solid rgba(0,0,0,0.05)' },
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.08)',
+                    transform: 'translateY(-2px)'
+                  }
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FilterList sx={{ color: 'primary.main', ml: 1, mr: 0.5 }} />
+                  </InputAdornment>
+                ),
+              }}
+              SelectProps={{
+                sx: {
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  fontSize: '0.75rem',
+                  py: 1.5
+                },
+                MenuProps: {
+                  PaperProps: {
+                    sx: {
+                      borderRadius: '16px',
+                      mt: 1,
+                      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      '& .MuiMenuItem-root': {
+                        py: 1.5,
+                        px: 2,
+                        mx: 1,
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        '&:hover': { bgcolor: 'rgba(232, 57, 29, 0.05)', color: 'primary.main' },
+                        '&.Mui-selected': { bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }
+                      }
+                    }
+                  }
+                }
+              }}
+            >
+              <MenuItem value="all">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Tune sx={{ fontSize: 16 }} />
+                  <span>All Staff Members</span>
+                </Stack>
+              </MenuItem>
+              <MenuItem value={ROLES.FACILITATOR}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <AccountCircle sx={{ fontSize: 16 }} />
+                  <span>Facilitators</span>
+                </Stack>
+              </MenuItem>
+              <MenuItem value={ROLES.INTERVIEWER}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Shield sx={{ fontSize: 16 }} />
+                  <span>Interviewers</span>
+                </Stack>
+              </MenuItem>
+            </TextField>
           </Box>
 
           <Stack spacing={4}>
@@ -354,8 +515,15 @@ const StaffManagement = () => {
                     '& .staff-actions': { opacity: 1 }
                   }
                 }}>
-                  <CardContent sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Stack direction="row" spacing={3} alignItems="center" sx={{ flexGrow: 1 }}>
+                  <CardContent sx={{
+                    p: 2.5,
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    gap: { xs: 2, sm: 0 }
+                  }}>
+                    <Stack direction="row" spacing={3} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
                       <Avatar sx={{ bgcolor: 'secondary.main', borderRadius: 2, fontWeight: 900, width: 48, height: 48 }}>{member.name[0]}</Avatar>
                       <Box>
                         <Typography variant="subtitle1" fontWeight={900}>{member.name}</Typography>
@@ -365,7 +533,7 @@ const StaffManagement = () => {
                       </Box>
                     </Stack>
 
-                    <Stack direction="row" spacing={6} alignItems="center">
+                    <Stack direction="row" spacing={{ xs: 2, sm: 6 }} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'center' } }}>
                       <Box sx={{ minWidth: 120, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ display: 'block', mb: 0.5, letterSpacing: '0.05em' }}>
                           ROLE
@@ -402,9 +570,12 @@ const StaffManagement = () => {
                       spacing={1}
                       className="staff-actions"
                       sx={{
-                        opacity: 0,
+                        opacity: { xs: 1, sm: 0 },
                         transition: 'opacity 0.2s',
-                        ml: 4
+                        ml: { xs: 0, sm: 4 },
+                        mt: { xs: 2, sm: 0 },
+                        justifyContent: { xs: 'flex-end', sm: 'center' },
+                        width: { xs: '100%', sm: 'auto' }
                       }}
                     >
                       <IconButton
@@ -412,12 +583,18 @@ const StaffManagement = () => {
                         color="primary"
                         component={Link}
                         to={`/staff/profile/${member._id}`}
+                        sx={{ bgcolor: { xs: 'primary.light', sm: 'transparent' }, color: { xs: 'primary.contrastText', sm: 'primary.main' } }}
                       >
                         <AccountCircle sx={{ fontSize: 18 }} />
                       </IconButton>
-                      <IconButton size="small" color="error" onClick={() => {
-                        if (confirm(`Remove ${member.name} from staff?`)) deleteStaffMutation.mutate(member._id);
-                      }}>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          if (confirm(`Remove ${member.name} from staff?`)) deleteStaffMutation.mutate(member._id);
+                        }}
+                        sx={{ bgcolor: { xs: 'error.light', sm: 'transparent' }, color: { xs: 'error.contrastText', sm: 'error.main' } }}
+                      >
                         <Delete sx={{ fontSize: 18 }} />
                       </IconButton>
                     </Stack>

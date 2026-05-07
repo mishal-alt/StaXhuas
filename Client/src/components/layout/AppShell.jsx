@@ -21,8 +21,7 @@ const AppShell = ({ children }) => {
           >
             <Menu size={24} />
           </button>
-          <Logo className="h-12" />
-          <div className="w-10"></div> {/* Spacer for centering */}
+          <div className="flex-1"></div> {/* Spacer to maintain layout if needed, or just let menu button stay left */}
         </header>
 
         {/* Main Content Area */}

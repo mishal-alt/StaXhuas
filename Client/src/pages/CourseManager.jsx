@@ -2,9 +2,10 @@ import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from "sonner";
+import { Link } from 'react-router-dom';
 import {
   CircularProgress,
-Box,
+  Box,
   Typography,
   Grid,
   Card,
@@ -244,7 +245,13 @@ const CourseManager = () => {
                 separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
                 sx={{ mb: 1.5 }}
               >
-                <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                <MuiLink 
+                  component={Link} 
+                  to="/dashboard" 
+                  underline="none" 
+                  color="text.secondary" 
+                  sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+                >
                   DASHBOARD
                 </MuiLink>
                 <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
@@ -253,13 +260,13 @@ const CourseManager = () => {
               </Breadcrumbs>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ 
-                  bgcolor: 'primary.main', 
-                  color: 'white', 
-                  p: 1, 
-                  borderRadius: 2, 
-                  display: 'flex', 
-                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)' 
+                <Box sx={{
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  p: 1,
+                  borderRadius: 2,
+                  display: 'flex',
+                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
                 }}>
                   <Book fontSize="medium" />
                 </Box>
@@ -293,69 +300,68 @@ const CourseManager = () => {
           <Box sx={{ mt: 2 }}>
             <Stack spacing={3}>
 
-              {/* Course Selection Cards - Top Wrapping Layout */}
-              <Box sx={{ 
-                display: 'flex', 
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                gap: 2, 
-                pb: 2,
-                mx: -2,
-                px: 2
-              }}>
-                {courses.map((course) => (
-                  <Card
-                    key={course._id}
-                    onClick={() => {
-                      setSelectedCourse(course);
-                      setTimeout(() => {
-                        detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }, 100);
-                    }}
-                    sx={{
-                      minWidth: 230,
-                      maxWidth: 230,
-                      height: 140,
-                      flexShrink: 0,
-                      cursor: 'pointer',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      border: '2px solid',
-                      borderColor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(0,0,0,0.04)',
-                      background: selectedCourse?._id === course._id ? 'white' : 'white',
-                      boxShadow: selectedCourse?._id === course._id ? '0 12px 24px rgba(232, 57, 29, 0.12)' : '0 4px 12px rgba(0,0,0,0.03)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': { 
-                        transform: 'translateY(-6px)',
-                        boxShadow: '0 15px 30px rgba(0,0,0,0.08)',
-                        borderColor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(232, 57, 29, 0.3)'
-                      }
-                    }}
-                  >
+                {/* Course Selection Cards - Top Wrapping Layout */}
+                <Box sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: { xs: 'flex-start', sm: 'center' },
+                  gap: { xs: 1.5, sm: 2 },
+                  pb: 2,
+                  px: { xs: 1, sm: 2 }
+                }}>
+                  {courses.map((course) => (
+                    <Card
+                      key={course._id}
+                      onClick={() => {
+                        setSelectedCourse(course);
+                        setTimeout(() => {
+                          detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                      }}
+                      sx={{
+                        width: { xs: 'calc(50% - 12px)', sm: 230 },
+                        minWidth: { xs: 'auto', sm: 230 },
+                        height: { xs: 110, sm: 140 },
+                        flexShrink: 0,
+                        cursor: 'pointer',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        border: '2px solid',
+                        borderColor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(0,0,0,0.04)',
+                        background: 'white',
+                        boxShadow: selectedCourse?._id === course._id ? '0 12px 24px rgba(232, 57, 29, 0.12)' : '0 4px 12px rgba(0,0,0,0.03)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                          transform: 'translateY(-6px)',
+                          boxShadow: '0 15px 30px rgba(0,0,0,0.08)',
+                          borderColor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(232, 57, 29, 0.3)'
+                        }
+                      }}
+                    >
                     <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <Box>
-                        <Typography variant="subtitle1" fontWeight={900} sx={{ 
-                          lineHeight: 1.2, 
+                        <Typography variant="subtitle1" fontWeight={900} sx={{
+                          lineHeight: 1.2,
                           mb: 0.5,
                           color: selectedCourse?._id === course._id ? 'primary.main' : 'text.primary'
                         }}>
                           {course.name}
                         </Typography>
-                        <Chip 
-                          label={`${course.durationMonths} MONTHS`} 
-                          size="small" 
-                          sx={{ 
-                            height: 20, 
-                            fontSize: '0.65rem', 
+                        <Chip
+                          label={`${course.durationMonths} MONTHS`}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.65rem',
                             fontWeight: 900,
                             bgcolor: selectedCourse?._id === course._id ? 'primary.main' : 'rgba(0,0,0,0.05)',
                             color: selectedCourse?._id === course._id ? 'white' : 'text.secondary'
-                          }} 
+                          }}
                         />
                       </Box>
-                      
+
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <ChevronRight sx={{ 
+                        <ChevronRight sx={{
                           color: selectedCourse?._id === course._id ? 'primary.main' : 'text.disabled',
                           transform: selectedCourse?._id === course._id ? 'translateX(4px)' : 'none',
                           transition: 'transform 0.2s'
@@ -363,25 +369,25 @@ const CourseManager = () => {
                       </Box>
 
                       {/* Subtle background decoration */}
-                      <School sx={{ 
-                        position: 'absolute', 
-                        right: -10, 
-                        bottom: -10, 
-                        fontSize: 80, 
-                        opacity: selectedCourse?._id === course._id ? 0.08 : 0.03, 
+                      <School sx={{
+                        position: 'absolute',
+                        right: -10,
+                        bottom: -10,
+                        fontSize: 80,
+                        opacity: selectedCourse?._id === course._id ? 0.08 : 0.03,
                         color: 'primary.main',
                         transform: 'rotate(-15deg)'
                       }} />
                     </CardContent>
                   </Card>
                 ))}
-                
+
                 {courses.length === 0 && (
-                  <Paper sx={{ 
-                    p: 4, 
-                    flexGrow: 1, 
-                    textAlign: 'center', 
-                    bgcolor: 'action.hover', 
+                  <Paper sx={{
+                    p: 4,
+                    flexGrow: 1,
+                    textAlign: 'center',
+                    bgcolor: 'action.hover',
                     borderRadius: 4,
                     border: '1px dashed rgba(0,0,0,0.1)'
                   }}>
@@ -400,7 +406,7 @@ const CourseManager = () => {
               {selectedCourse ? (
                 <Stack spacing={4}>
                   <Box sx={{
-                    p: 4,
+                    p: { xs: 2.5, sm: 4 },
                     bgcolor: 'secondary.main',
                     color: 'white',
                     borderRadius: 2,
@@ -409,19 +415,19 @@ const CourseManager = () => {
                     '&:hover .course-header-actions': { opacity: 1 }
                   }}>
                     <Box sx={{ position: 'relative', zIndex: 1 }}>
-                      <Typography variant="h5" fontWeight={900} gutterBottom>{selectedCourse.name}</Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.8, maxWidth: '80%' }}>{selectedCourse.description}</Typography>
+                      <Typography variant="h5" fontWeight={900} gutterBottom sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>{selectedCourse.name}</Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.8, maxWidth: { xs: '100%', sm: '80%' } }}>{selectedCourse.description}</Typography>
                     </Box>
                     <Stack
                       direction="row"
                       spacing={1}
                       className="course-header-actions"
                       sx={{
-                        opacity: 0,
+                        opacity: { xs: 1, sm: 0 },
                         transition: 'opacity 0.2s',
                         position: 'absolute',
-                        top: 24,
-                        right: 24,
+                        top: { xs: 12, sm: 24 },
+                        right: { xs: 12, sm: 24 },
                         zIndex: 2
                       }}
                     >
@@ -438,26 +444,30 @@ const CourseManager = () => {
                         <Delete sx={{ fontSize: 18 }} />
                       </IconButton>
                     </Stack>
-                    
+
                     <Button
                       variant="contained"
                       size="small"
                       startIcon={<Add />}
                       onClick={() => setShowModuleForm(true)}
-                      sx={{ 
+                      sx={{
                         position: 'absolute',
-                        bottom: 24,
-                        right: 24,
+                        bottom: { xs: 12, sm: 24 },
+                        right: { xs: 12, sm: 24 },
                         zIndex: 2,
                         borderRadius: 2,
-                        px: 3,
+                        px: { xs: 1.5, sm: 3 },
+                        py: { xs: 0.8, sm: 1 },
+                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                        minWidth: 'auto',
                         bgcolor: 'white',
                         color: 'secondary.main',
                         '&:hover': { bgcolor: 'rgba(255,255,255,0.9)', transform: 'translateY(-2px)' },
                         transition: 'all 0.2s'
                       }}
                     >
-                      Add Module
+                      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Add Module</Box>
+                      <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Add</Box>
                     </Button>
 
                     <School sx={{ position: 'absolute', right: -20, bottom: -20, fontSize: 180, opacity: 0.05, transform: 'rotate(-15deg)' }} />
@@ -490,7 +500,10 @@ const CourseManager = () => {
                               <AccessTime sx={{ fontSize: 16 }} />
                               <Typography variant="caption" fontWeight={700}>{module.durationWeeks} WEEKS</Typography>
                             </Stack>
-                            <Stack direction="row" className="module-actions" sx={{ opacity: 0, transition: 'opacity 0.2s' }}>
+                            <Stack direction="row" className="module-actions" sx={{ 
+                              opacity: { xs: 1, sm: 0 }, 
+                              transition: 'opacity 0.2s' 
+                            }}>
                               <IconButton size="small" color="primary" onClick={(e) => {
                                 e.stopPropagation();
                                 setEditingModule(module);
@@ -501,7 +514,7 @@ const CourseManager = () => {
                             </Stack>
                           </Stack>
                         </AccordionSummary>
-                        <AccordionDetails sx={{ px: 4, pb: 4 }}>
+                        <AccordionDetails sx={{ px: { xs: 2, sm: 4 }, pb: 4 }}>
                           <Stack spacing={3}>
                             <Typography variant="body2" color="text.secondary">{module.description}</Typography>
                             <Divider />
@@ -531,16 +544,21 @@ const CourseManager = () => {
                                     bgcolor: 'action.hover',
                                     borderRadius: 3,
                                     display: 'flex',
+                                    flexDirection: { xs: 'column', sm: 'row' },
                                     justifyContent: 'space-between',
-                                    alignItems: 'center',
+                                    alignItems: { xs: 'flex-start', sm: 'center' },
+                                    gap: { xs: 2, sm: 0 },
                                     '&:hover .task-actions': { opacity: 1 }
                                   }}>
                                     <Stack direction="row" spacing={2} alignItems="center">
                                       <Assignment sx={{ fontSize: 18, color: 'text.secondary' }} />
                                       <Typography variant="body2" fontWeight={700}>{task.title}</Typography>
                                     </Stack>
-                                    <Stack direction="row" spacing={1} alignItems="center">
-                                      <Box className="task-actions" sx={{ opacity: 0, transition: 'opacity 0.2s' }}>
+                                    <Stack direction="row" spacing={1} alignItems="center" sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}>
+                                      <Box className="task-actions" sx={{ 
+                                        opacity: { xs: 1, sm: 0 }, 
+                                        transition: 'opacity 0.2s' 
+                                      }}>
                                         <IconButton size="small" color="primary" onClick={() => {
                                           setActiveModuleId(module._id);
                                           setEditingTask(task);

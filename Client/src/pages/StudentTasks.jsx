@@ -18,8 +18,11 @@ import {
   ThemeProvider,
   createTheme,
   Avatar,
-  Tooltip
+  Tooltip,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { 
   Assignment, 
   OpenInNew, 
@@ -29,7 +32,8 @@ import {
   RadioButtonUnchecked,
   Info,
   ChevronRight,
-  Forum
+  Forum,
+  NavigateNext
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -94,18 +98,66 @@ const StudentTasks = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 12 }}>
           
           {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-            <Box>
-              <Typography variant="h4" color="secondary" sx={{ fontSize: '2.5rem' }}>Tasks & Resources</Typography>
-              <Typography variant="body1" color="text.secondary" fontWeight={600}>Everything you need to master this module.</Typography>
+          <Box sx={{
+            pt: 4,
+            pb: 3,
+            px: 6,
+            mx: -6,
+            mt: -6,
+            background: 'white',
+            borderBottom: '1px solid #E5E7EB',
+            mb: 3
+          }}>
+            <Breadcrumbs 
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              sx={{ mb: 1.5 }}
+            >
+              <MuiLink 
+                component={RouterLink} 
+                to="/dashboard" 
+                underline="none" 
+                color="text.secondary" 
+                sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+              >
+                DASHBOARD
+              </MuiLink>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                TASKS
+              </Typography>
+            </Breadcrumbs>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 3,
+                  bgcolor: 'rgba(232, 57, 29, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'primary.main'
+                }}>
+                  <Assignment />
+                </Box>
+                <Box>
+                  <Typography variant="h4" fontWeight={900} sx={{ fontSize: '1.5rem', color: '#1E2126', lineHeight: 1.2 }}>
+                    Tasks & Resources
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    Everything you need to master this module.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Paper elevation={0} sx={{ p: 2, px: 3, border: '1px solid', borderColor: 'divider', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Typography variant="caption" fontWeight={900}>PROGRESS</Typography>
+                <Box sx={{ width: 120 }}>
+                  <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 4, bgcolor: 'action.hover' }} />
+                </Box>
+                <Typography variant="subtitle2" fontWeight={900} color="primary">{completedTasks.length}/{tasks.length}</Typography>
+              </Paper>
             </Box>
-            <Paper elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-               <Typography variant="caption" fontWeight={900}>PROGRESS</Typography>
-               <Box sx={{ width: 120 }}>
-                 <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 4, bgcolor: 'action.hover' }} />
-               </Box>
-               <Typography variant="subtitle2" fontWeight={900} color="primary">{completedTasks.length}/{tasks.length}</Typography>
-            </Paper>
           </Box>
 
           <Grid container spacing={6}>

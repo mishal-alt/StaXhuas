@@ -24,6 +24,7 @@ import {
   Breadcrumbs,
   Link as MuiLink
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import {
   TrendingUp,
   TrendingDown,
@@ -125,7 +126,13 @@ const Reports = () => {
                 separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
                 sx={{ mb: 1.5 }}
               >
-                <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                <MuiLink 
+                  component={Link} 
+                  to="/dashboard" 
+                  underline="none" 
+                  color="text.secondary" 
+                  sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+                >
                   DASHBOARD
                 </MuiLink>
                 <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>

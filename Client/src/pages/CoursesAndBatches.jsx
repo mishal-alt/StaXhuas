@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { toast } from "sonner";
 import {
   CircularProgress,
-Box,
+  Box,
   Typography,
   Grid,
   Card,
@@ -201,11 +201,17 @@ const CoursesAndBatches = () => {
             gap: 2
           }}>
             <Box>
-              <Breadcrumbs 
-                separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+              <Breadcrumbs
+                separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />}
                 sx={{ mb: 1.5 }}
               >
-                <MuiLink underline="none" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}>
+                <MuiLink
+                  component={Link}
+                  to="/dashboard"
+                  underline="none"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
+                >
                   DASHBOARD
                 </MuiLink>
                 <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
@@ -214,13 +220,13 @@ const CoursesAndBatches = () => {
               </Breadcrumbs>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ 
-                  bgcolor: 'primary.main', 
-                  color: 'white', 
-                  p: 1, 
-                  borderRadius: 2, 
-                  display: 'flex', 
-                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)' 
+                <Box sx={{
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  p: 1,
+                  borderRadius: 2,
+                  display: 'flex',
+                  boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
                 }}>
                   <Layers fontSize="medium" />
                 </Box>
@@ -254,38 +260,87 @@ const CoursesAndBatches = () => {
             </Stack>
           </Box>
 
-          {/* Analytics Board - Real Data */}
-          <Grid container spacing={3} justifyContent="center">
+          {/* KPI Grid - Strictly 4-column layout */}
+          <Box sx={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 1.5, md: 2 },
+            mb: 2
+          }}>
             {[
               { label: 'Total Batches', value: batches.length, icon: <Layers />, color: '#E8391D' },
               { label: 'Active Cohorts', value: batches.filter(b => b.status !== 'completed').length, icon: <CalendarMonth />, color: '#1976d2' },
               { label: 'Enrolled Students', value: batches.reduce((sum, b) => sum + (b.students?.length || 0), 0), icon: <People />, color: '#2e7d32' },
               { label: 'Course Tracks', value: courses.length, icon: <School />, color: '#9c27b0' },
             ].map((stat, i) => (
-              <Grid item xs={12} sm={3} md={3} lg={3} key={i}>
-                <Card sx={{
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
-                  borderRadius: '24px',
-                  border: '1px solid rgba(0,0,0,0.05)',
-                  height: '100%',
-                  bgcolor: 'white'
+              <Card key={i} sx={{
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                borderRadius: '24px',
+                border: '1px solid rgba(0,0,0,0.05)',
+                height: { xs: 80, sm: 100 },
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: 0,
+                overflow: 'hidden'
+              }}>
+                <CardContent sx={{
+                  p: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: { xs: 1, sm: 1.5, md: 2 },
+                  width: '100%',
+                  '&:last-child': { pb: { xs: 1.5, sm: 2 } }
                 }}>
-                  <CardContent sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ p: 2, bgcolor: `${stat.color}10`, color: stat.color, borderRadius: 4 }}>
-                      {stat.icon}
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
-                        {stat.label.toUpperCase()}
-                      </Typography>
-                      <Typography variant="h4" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>{stat.value}</Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+                  <Box sx={{
+                    p: { xs: 1, sm: 1.2, md: 1.5 },
+                    bgcolor: `${stat.color}10`,
+                    color: stat.color,
+                    borderRadius: 2.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {React.cloneElement(stat.icon, { sx: { fontSize: { xs: 18, sm: 20, md: 22 } } })}
+                  </Box>
+                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                    <Typography
+                      variant="caption"
+                      fontWeight={900}
+                      color="text.secondary"
+                      sx={{
+                        letterSpacing: '0.05em',
+                        display: 'block',
+                        fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.7rem' },
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.label.toUpperCase()}
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      fontWeight={900}
+                      sx={{
+                        fontFamily: 'Outfit',
+                        color: 'secondary.main',
+                        fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.8rem' },
+                        mt: 0.3,
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </Grid>
+          </Box>
 
           {/* Search Bar */}
           <Box sx={{ mb: 2 }}>
@@ -324,19 +379,43 @@ const CoursesAndBatches = () => {
                   '& .batch-actions': { opacity: 1 }
                 }
               }}>
-                <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 3, color: 'primary.main', display: { xs: 'none', sm: 'block' } }}>
-                    <School />
+                <CardContent sx={{
+                  p: 2.5,
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  gap: { xs: 2, sm: 4 }
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: '100%' }}>
+                    <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 3, color: 'primary.main', display: { xs: 'none', sm: 'block' } }}>
+                      <School />
+                    </Box>
+
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="subtitle1" fontWeight={900}>{batch.name}</Typography>
+                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
+                        {batch.course?.name || 'COURSE'}
+                      </Typography>
+                    </Box>
+
+                    {/* Mobile Status Indicator */}
+                    <Box sx={{
+                      display: { xs: 'flex', sm: 'none' },
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 2,
+                      bgcolor: batch.isActive ? 'rgba(46, 125, 50, 0.08)' : 'rgba(211, 47, 47, 0.08)',
+                    }}>
+                      <Box sx={{ width: 6, height: 6, bgcolor: batch.isActive ? 'success.main' : 'error.main', borderRadius: '50%' }} />
+                      <Typography variant="caption" fontWeight={900} color={batch.isActive ? 'success.main' : 'error.main'}>
+                        {batch.isActive ? 'ACTIVE' : 'OFF'}
+                      </Typography>
+                    </Box>
                   </Box>
 
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="subtitle1" fontWeight={900}>{batch.name}</Typography>
-                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
-                      {batch.course?.name || 'COURSE'}
-                    </Typography>
-                  </Box>
-
-                  <Stack direction="row" spacing={6} sx={{ display: { xs: 'none', md: 'flex' }, mx: 4 }}>
+                  <Stack direction="row" spacing={{ xs: 4, sm: 6 }} sx={{ display: 'flex', width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'center' } }}>
                     <Box sx={{ textAlign: 'center', minWidth: 80 }}>
                       <Typography variant="caption" fontWeight={900} color="text.secondary" display="block">STUDENTS</Typography>
                       <Typography variant="subtitle2" fontWeight={900}>{batch.students?.length || 0}</Typography>
@@ -366,47 +445,59 @@ const CoursesAndBatches = () => {
                     </Typography>
                   </Box>
 
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    className="batch-actions"
-                    sx={{
-                      opacity: 0,
-                      transition: 'opacity 0.2s',
-                      display: { xs: 'none', sm: 'flex' }
-                    }}
-                  >
-                    <IconButton size="small" color="primary" onClick={() => {
-                      setEditingBatch(batch);
-                      resetBatch({
-                        name: batch.name,
-                        course: batch.course?._id,
-                        facilitator: batch.facilitator?._id,
-                        startDate: new Date(batch.startDate).toISOString().split('T')[0],
-                        isActive: batch.isActive
-                      });
-                      setShowBatchForm(true);
-                    }}>
-                      <Edit sx={{ fontSize: 18 }} />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => {
-                      if (confirm('Delete this batch?')) deleteBatchMutation.mutate(batch._id);
-                    }}>
-                      <Delete sx={{ fontSize: 18 }} />
-                    </IconButton>
-                  </Stack>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'center' } }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      className="batch-actions"
+                      sx={{
+                        opacity: { xs: 1, sm: 0 },
+                        transition: 'opacity 0.2s',
+                        display: 'flex'
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => {
+                          setEditingBatch(batch);
+                          resetBatch({
+                            name: batch.name,
+                            course: batch.course?._id,
+                            facilitator: batch.facilitator?._id,
+                            startDate: new Date(batch.startDate).toISOString().split('T')[0],
+                            isActive: batch.isActive
+                          });
+                          setShowBatchForm(true);
+                        }}
+                        sx={{ bgcolor: { xs: 'primary.light', sm: 'transparent' }, color: { xs: 'primary.contrastText', sm: 'primary.main' } }}
+                      >
+                        <Edit sx={{ fontSize: 18 }} />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          if (confirm('Delete this batch?')) deleteBatchMutation.mutate(batch._id);
+                        }}
+                        sx={{ bgcolor: { xs: 'error.light', sm: 'transparent' }, color: { xs: 'error.contrastText', sm: 'error.main' } }}
+                      >
+                        <Delete sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Stack>
 
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    component={Link}
-                    to={`/batches/${batch._id}`}
-                    disableElevation
-                    size="small"
-                    sx={{ py: 1, px: 3, borderRadius: 2 }}
-                  >
-                    Manage Batch
-                  </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      component={Link}
+                      to={`/batches/${batch._id}`}
+                      disableElevation
+                      size="small"
+                      sx={{ py: 1, px: 3, borderRadius: 2, flexGrow: { xs: 1, sm: 0 } }}
+                    >
+                      Manage
+                    </Button>
+                  </Box>
                 </CardContent>
               </Card>
             ))}
