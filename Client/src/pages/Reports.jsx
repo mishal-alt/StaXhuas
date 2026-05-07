@@ -193,36 +193,89 @@ const Reports = () => {
 
           <Divider sx={{ opacity: 0.1 }} />
 
-          {/* KPI Section */}
-          <Grid container spacing={4}>
-            {KPI_DATA.map((kpi, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-                  <Box sx={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, bgcolor: 'action.hover', borderRadius: '50%', opacity: 0.5 }} />
-                  <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
-                      <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 4, color: kpi.color }}>
-                        {kpi.icon}
+          {/* Stats Section - Standardized 4-Box Grid */}
+          <Box sx={{ 
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 1.5, md: 2 },
+            mb: 2
+          }}>
+            {KPI_DATA.map((kpi, i) => (
+              <Card key={i} sx={{
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                borderRadius: '24px',
+                border: '1px solid rgba(0,0,0,0.05)',
+                height: { xs: 80, sm: 100 },
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: 0,
+                overflow: 'hidden',
+                bgcolor: 'white'
+              }}>
+                <CardContent sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 1.5, md: 2 },
+                  width: '100%',
+                  '&:last-child': { pb: { xs: 1.5, sm: 2 } }
+                }}>
+                  <Box sx={{ 
+                    p: { xs: 1, sm: 1.2, md: 1.5 }, 
+                    bgcolor: `${kpi.color}10`, 
+                    color: kpi.color, 
+                    borderRadius: 2.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {React.cloneElement(kpi.icon, { sx: { fontSize: { xs: 18, sm: 20, md: 22 } } })}
+                  </Box>
+                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography 
+                        variant="caption" 
+                        fontWeight={900} 
+                        color="text.secondary" 
+                        sx={{ 
+                          letterSpacing: '0.05em', 
+                          display: 'block',
+                          fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.7rem' },
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          lineHeight: 1
+                        }}
+                      >
+                        {kpi.label.toUpperCase()}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', color: kpi.up ? 'success.main' : 'error.main' }}>
+                        {kpi.up ? <TrendingUp sx={{ fontSize: 12 }} /> : <TrendingDown sx={{ fontSize: 12 }} />}
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 900, ml: 0.2 }}>{kpi.trend}</Typography>
                       </Box>
-                      <Chip
-                        label={kpi.trend}
-                        size="small"
-                        color={kpi.up ? 'success' : 'error'}
-                        icon={kpi.up ? <TrendingUp /> : <TrendingDown />}
-                        sx={{ fontWeight: 900, borderRadius: 2 }}
-                      />
                     </Box>
-                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em', mb: 1, display: 'block' }}>
-                      {kpi.label}
-                    </Typography>
-                    <Typography variant="h3" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>
+                    <Typography 
+                      variant="h4" 
+                      fontWeight={900} 
+                      sx={{ 
+                        fontFamily: 'Outfit', 
+                        color: 'secondary.main',
+                        fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.8rem' },
+                        mt: 0.3,
+                        lineHeight: 1
+                      }}
+                    >
                       {kpi.value}
                     </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </Grid>
+          </Box>
 
           {/* Charts Section */}
           <Grid container spacing={4}>

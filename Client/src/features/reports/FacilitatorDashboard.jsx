@@ -76,6 +76,12 @@ const theme = createTheme({
   }
 });
 
+// Mock data for batches
+const DUMMY_BATCHES = [
+  { id: 1, name: 'FS-MERN-B21', progress: 'W8-D3', fill: 65, students: 28, attendance: 24, nextScrum: '10:30 AM' },
+  { id: 2, name: 'DS-PYTHON-B04', progress: 'W4-D1', fill: 40, students: 22, attendance: 20, nextScrum: '02:00 PM' },
+];
+
 const FacilitatorDashboard = ({ user }) => {
   const navigate = useNavigate();
 
@@ -187,37 +193,88 @@ const FacilitatorDashboard = ({ user }) => {
           />
         </Box>
 
-        {/* Stats Section */}
-        <Grid container spacing={3} justifyContent="center">
+        {/* Stats Section - Standardized 4-Box Grid */}
+        <Box sx={{ 
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+          gap: { xs: 1.5, md: 2 },
+          mb: 2
+        }}>
           {[
             { label: 'Active Batches', value: batches.filter(b => b.status !== 'completed').length, icon: <Bolt />, color: '#E8391D' },
             { label: 'Total Students', value: totalStudents, icon: <People />, color: '#1976d2' },
             { label: 'Pending Leaves', value: pendingLeaves, icon: <Info />, color: '#ed6c02' },
             { label: 'Network Health', value: '98%', icon: <TrendingUp />, color: '#2e7d32' },
           ].map((stat, i) => (
-            <Grid item xs={12} sm={3} md={3} lg={3} key={i}>
-              <Card sx={{
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
-                borderRadius: '24px',
-                border: '1px solid rgba(0,0,0,0.05)',
-                height: '100%'
+            <Card key={i} sx={{
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+              borderRadius: '24px',
+              border: '1px solid rgba(0,0,0,0.05)',
+              height: { xs: 80, sm: 100 },
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: 0,
+              overflow: 'hidden',
+              bgcolor: 'white'
+            }}>
+              <CardContent sx={{ 
+                p: { xs: 1.5, sm: 2 }, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: { xs: 1, sm: 1.5, md: 2 },
+                width: '100%',
+                '&:last-child': { pb: { xs: 1.5, sm: 2 } }
               }}>
-                <CardContent sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.2em' }}>
-                      {stat.label}
-                    </Typography>
-                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1, fontFamily: 'Outfit' }}>{stat.value}</Typography>
-                  </Box>
-                  <Box sx={{ p: 2, bgcolor: `${stat.color}10`, color: stat.color, borderRadius: 4 }}>
-                    {stat.icon}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                <Box sx={{ 
+                  p: { xs: 1, sm: 1.2, md: 1.5 }, 
+                  bgcolor: `${stat.color}10`, 
+                  color: stat.color, 
+                  borderRadius: 2.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  {React.cloneElement(stat.icon, { sx: { fontSize: { xs: 18, sm: 20, md: 22 } } })}
+                </Box>
+                <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                  <Typography 
+                    variant="caption" 
+                    fontWeight={900} 
+                    color="text.secondary" 
+                    sx={{ 
+                      letterSpacing: '0.05em', 
+                      display: 'block',
+                      fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.7rem' },
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      lineHeight: 1
+                    }}
+                  >
+                    {stat.label.toUpperCase()}
+                  </Typography>
+                  <Typography 
+                    variant="h4" 
+                    fontWeight={900} 
+                    sx={{ 
+                      fontFamily: 'Outfit', 
+                      color: 'secondary.main',
+                      fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.8rem' },
+                      mt: 0.3,
+                      lineHeight: 1
+                    }}
+                  >
+                    {stat.value.toString().padStart(2, '0')}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
           ))}
-        </Grid>
+        </Box>
 
         {/* Main Grid */}
         <Grid container spacing={6}>

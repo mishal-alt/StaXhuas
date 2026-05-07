@@ -137,27 +137,88 @@ const EvaluationManagement = () => {
             </Box>
           </Box>
 
-          {/* Stats Grid */}
-          <Grid container spacing={3}>
+          {/* Stats Section - Standardized 4-Box Grid */}
+          <Box sx={{ 
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 1.5, md: 2 },
+            mb: 2
+          }}>
             {[
               { label: 'To Schedule', count: '05', color: '#E8391D', icon: <Schedule /> },
               { label: 'Pending Scores', count: '02', color: '#1E2126', icon: <Assignment /> },
               { label: 'Pass Rate', count: '92%', color: '#2e7d32', icon: <CheckCircle /> },
               { label: 'Re-Interviews', count: '01', color: '#d32f2f', icon: <Info /> },
             ].map((stat, i) => (
-              <Grid item xs={12} sm={6} md={3} key={i}>
-                <Card>
-                  <CardContent sx={{ p: 4 }}>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                      <Box sx={{ color: stat.color }}>{stat.icon}</Box>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>{stat.label.toUpperCase()}</Typography>
-                    </Stack>
-                    <Typography variant="h3" fontWeight={900} sx={{ fontFamily: 'Outfit', color: stat.color }}>{stat.count}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <Card key={i} sx={{
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
+                borderRadius: '24px',
+                border: '1px solid rgba(0,0,0,0.05)',
+                height: { xs: 80, sm: 100 },
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: 0,
+                overflow: 'hidden',
+                bgcolor: 'white'
+              }}>
+                <CardContent sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 1.5, md: 2 },
+                  width: '100%',
+                  '&:last-child': { pb: { xs: 1.5, sm: 2 } }
+                }}>
+                  <Box sx={{ 
+                    p: { xs: 1, sm: 1.2, md: 1.5 }, 
+                    bgcolor: `${stat.color}10`, 
+                    color: stat.color, 
+                    borderRadius: 2.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    {React.cloneElement(stat.icon, { sx: { fontSize: { xs: 18, sm: 20, md: 22 } } })}
+                  </Box>
+                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                    <Typography 
+                      variant="caption" 
+                      fontWeight={900} 
+                      color="text.secondary" 
+                      sx={{ 
+                        letterSpacing: '0.05em', 
+                        display: 'block',
+                        fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.7rem' },
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.label.toUpperCase()}
+                    </Typography>
+                    <Typography 
+                      variant="h4" 
+                      fontWeight={900} 
+                      sx={{ 
+                        fontFamily: 'Outfit', 
+                        color: 'secondary.main',
+                        fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.8rem' },
+                        mt: 0.3,
+                        lineHeight: 1
+                      }}
+                    >
+                      {stat.count}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </Grid>
+          </Box>
 
           {/* Evaluations Table */}
           <Card sx={{ overflow: 'hidden' }}>
