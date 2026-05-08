@@ -32,7 +32,10 @@ import {
   ThemeProvider,
   createTheme,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
 import {
   Add,
@@ -45,7 +48,12 @@ import {
   Edit,
   Delete,
   Layers,
-  NavigateNext
+  NavigateNext,
+  CheckCircle,
+  PendingActions,
+  Mic,
+  Campaign,
+  ExpandMore
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
@@ -67,7 +75,7 @@ const theme = createTheme({
     h4: { fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em' },
     h6: { fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' },
   },
-  shape: { borderRadius: 24 },
+  shape: { borderRadius: 8 },
   components: {
     MuiButton: {
       styleOverrides: {
@@ -83,7 +91,7 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 32,
+          borderRadius: 12,
           boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
           border: '1px solid rgba(0,0,0,0.03)',
         }
@@ -366,164 +374,206 @@ const CoursesAndBatches = () => {
             />
           </Box>
 
-          {/* Batches List (Linear Type) */}
-          <Stack spacing={2}>
-            {paginatedBatches.map((batch) => (
-              <Card key={batch._id} sx={{
-                position: 'relative',
-                borderLeft: '6px solid #E8391D',
-                transition: 'all 0.3s',
-                '&:hover': {
-                  transform: 'translateX(8px)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  '& .batch-actions': { opacity: 1 }
-                }
-              }}>
-                <CardContent sx={{
-                  p: 2.5,
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'flex-start', sm: 'center' },
-                  gap: { xs: 2, sm: 4 }
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: '100%' }}>
-                    <Box sx={{ p: 1.5, bgcolor: 'action.hover', borderRadius: 3, color: 'primary.main', display: { xs: 'none', sm: 'block' } }}>
-                      <School />
-                    </Box>
-
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="subtitle1" fontWeight={900}>{batch.name}</Typography>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ letterSpacing: '0.1em' }}>
-                        {batch.course?.name || 'COURSE'}
-                      </Typography>
-                    </Box>
-
-                    {/* Mobile Status Indicator */}
-                    <Box sx={{
-                      display: { xs: 'flex', sm: 'none' },
-                      alignItems: 'center',
-                      gap: 1,
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: 2,
-                      bgcolor: batch.isActive ? 'rgba(46, 125, 50, 0.08)' : 'rgba(211, 47, 47, 0.08)',
-                    }}>
-                      <Box sx={{ width: 6, height: 6, bgcolor: batch.isActive ? 'success.main' : 'error.main', borderRadius: '50%' }} />
-                      <Typography variant="caption" fontWeight={900} color={batch.isActive ? 'success.main' : 'error.main'}>
-                        {batch.isActive ? 'ACTIVE' : 'OFF'}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Stack direction="row" spacing={{ xs: 4, sm: 6 }} sx={{ display: 'flex', width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'center' } }}>
-                    <Box sx={{ textAlign: 'center', minWidth: 80 }}>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" display="block">STUDENTS</Typography>
-                      <Typography variant="subtitle2" fontWeight={900}>{batch.students?.length || 0}</Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center', minWidth: 100 }}>
-                      <Typography variant="caption" fontWeight={900} color="text.secondary" display="block">LAUNCHED</Typography>
-                      <Typography variant="subtitle2" fontWeight={900}>
-                        {new Date(batch.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </Typography>
-                    </Box>
-                  </Stack>
-
-                  <Box sx={{
-                    display: { xs: 'none', sm: 'flex' },
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 1.5,
-                    py: 0.5,
-                    borderRadius: 2,
-                    bgcolor: batch.isActive ? 'rgba(46, 125, 50, 0.08)' : 'rgba(211, 47, 47, 0.08)',
-                    minWidth: 90,
-                    justifyContent: 'center'
-                  }}>
-                    <Box sx={{ width: 6, height: 6, bgcolor: batch.isActive ? 'success.main' : 'error.main', borderRadius: '50%' }} />
-                    <Typography variant="caption" fontWeight={900} color={batch.isActive ? 'success.main' : 'error.main'} sx={{ letterSpacing: '0.05em' }}>
-                      {batch.isActive ? 'ACTIVE' : 'INACTIVE'}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'center' } }}>
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      className="batch-actions"
-                      sx={{
-                        opacity: { xs: 1, sm: 0 },
-                        transition: 'opacity 0.2s',
-                        display: 'flex'
-                      }}
-                    >
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => {
-                          setEditingBatch(batch);
-                          resetBatch({
-                            name: batch.name,
-                            course: batch.course?._id,
-                            facilitator: batch.facilitator?._id,
-                            startDate: new Date(batch.startDate).toISOString().split('T')[0],
-                            isActive: batch.isActive
-                          });
-                          setShowBatchForm(true);
-                        }}
-                        sx={{ bgcolor: { xs: 'primary.light', sm: 'transparent' }, color: { xs: 'primary.contrastText', sm: 'primary.main' } }}
-                      >
-                        <Edit sx={{ fontSize: 18 }} />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => {
-                          if (confirm('Delete this batch?')) deleteBatchMutation.mutate(batch._id);
-                        }}
-                        sx={{ bgcolor: { xs: 'error.light', sm: 'transparent' }, color: { xs: 'error.contrastText', sm: 'error.main' } }}
-                      >
-                        <Delete sx={{ fontSize: 18 }} />
-                      </IconButton>
-                    </Stack>
-
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      component={Link}
-                      to={`/batches/${batch._id}`}
-                      disableElevation
-                      size="small"
-                      sx={{ py: 1, px: 3, borderRadius: 2, flexGrow: { xs: 1, sm: 0 } }}
-                    >
-                      Manage
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
-
-            {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <Pagination
-                  count={totalPages}
-                  page={page}
-                  onChange={handlePageChange}
-                  color="primary"
-                  shape="rounded"
-                  size="large"
+          {/* Conditional Rendering: Admin List vs Facilitator Mini-Dashboard */}
+          {isAdmin ? (
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden' }}>
+              <Table>
+                <TableHead sx={{ bgcolor: '#FAFAFA' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 900, color: 'text.secondary', py: 2 }}>BATCH IDENTITY</TableCell>
+                    <TableCell sx={{ fontWeight: 900, color: 'text.secondary', py: 2 }}>COURSE TRACK</TableCell>
+                    <TableCell sx={{ fontWeight: 900, color: 'text.secondary', py: 2 }}>FACILITATOR</TableCell>
+                    <TableCell sx={{ fontWeight: 900, color: 'text.secondary', py: 2 }}>START DATE</TableCell>
+                    <TableCell sx={{ fontWeight: 900, color: 'text.secondary', py: 2 }}>STATUS</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 900, color: 'text.secondary', py: 2 }}>ACTIONS</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedBatches.map((batch) => (
+                    <TableRow key={batch._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                      <TableCell sx={{ fontWeight: 800, py: 2.5 }}>{batch.name}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{batch.course?.name || 'N/A'}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>{batch.facilitator?.name || 'UNASSIGNED'}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                        {new Date(batch.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={batch.isActive ? "ACTIVE" : "INACTIVE"}
+                          size="small"
+                          color={batch.isActive ? "success" : "default"}
+                          sx={{ fontWeight: 900, borderRadius: '6px' }}
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setEditingBatch(batch);
+                              resetBatch({
+                                name: batch.name,
+                                course: batch.course?._id,
+                                facilitator: batch.facilitator?._id,
+                                startDate: new Date(batch.startDate).toISOString().split('T')[0],
+                                isActive: batch.isActive
+                              });
+                              setShowBatchForm(true);
+                            }}
+                            sx={{ bgcolor: 'rgba(232, 57, 29, 0.05)', color: 'primary.main', borderRadius: '8px' }}
+                          >
+                            <Edit sx={{ fontSize: 18 }} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this batch?')) {
+                                deleteBatchMutation.mutate(batch._id);
+                              }
+                            }}
+                            sx={{ bgcolor: 'rgba(211, 47, 47, 0.05)', color: 'error.main', borderRadius: '8px' }}
+                          >
+                            <Delete sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            /* Facilitator Mini-Dashboard View */
+            <Stack spacing={2}>
+              {paginatedBatches.map((batch, index) => (
+                <Accordion
+                  key={batch._id}
+                  disableElevation
                   sx={{
-                    '& .MuiPaginationItem-root': {
-                      fontWeight: 900,
-                      borderRadius: 2,
-                      '&.Mui-selected': {
-                        boxShadow: '0 4px 12px rgba(232, 57, 29, 0.3)',
-                      }
+                    borderRadius: '12px !important',
+                    border: '1px solid #E5E7EB',
+                    '&:before': { display: 'none' },
+                    overflow: 'hidden',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                     }
                   }}
-                />
-              </Box>
-            )}
-          </Stack>
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMore sx={{ color: 'primary.main' }} />}
+                    sx={{
+                      px: 3,
+                      py: 1,
+                      '& .MuiAccordionSummary-content': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        justifyContent: 'space-between'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexGrow: 1 }}>
+                      <Box sx={{
+                        width: 40,
+                        height: 40,
+                        bgcolor: 'action.hover',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'primary.main',
+                        fontWeight: 900
+                      }}>
+                        {index + 1}
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={900}>{batch.name}</Typography>
+                        <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ letterSpacing: '0.05em' }}>
+                          {batch.course?.name || 'NO COURSE'}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <Chip
+                        label={batch.isActive ? "ACTIVE" : "OFF"}
+                        size="small"
+                        color={batch.isActive ? "success" : "default"}
+                        sx={{ fontWeight: 900, borderRadius: '6px', height: 24 }}
+                      />
+                    </Box>
+                  </AccordionSummary>
+
+                  <AccordionDetails sx={{ p: 0, borderTop: '1px solid #F3F4F6', bgcolor: '#FAFAFA' }}>
+                    <Box sx={{ p: 3 }}>
+                      <Grid container spacing={2}>
+                        {[
+                          { icon: <School sx={{ fontSize: 20 }} />, label: 'Students', value: `${batch.studentCount || 0} enrolled`, color: '#1976d2' },
+                          { icon: <CheckCircle sx={{ fontSize: 20 }} />, label: 'Attendance', value: `${batch.attendanceMarkedToday || 0}/${batch.studentCount || 0} marked`, color: '#2e7d32' },
+                          { icon: <PendingActions sx={{ fontSize: 20 }} />, label: 'Leaves', value: `${batch.pendingLeaves || 0} pending`, color: '#ed6c02' },
+                          { icon: <Mic sx={{ fontSize: 20 }} />, label: 'Interviews', value: `${batch.upcomingInterviews || 0} upcoming`, color: '#9c27b0' },
+                          { icon: <Campaign sx={{ fontSize: 20 }} />, label: 'Scrum Status', value: batch.scrumCompleted ? 'Completed for today' : 'Not yet completed', color: batch.scrumCompleted ? '#2e7d32' : '#E8391D' }
+                        ].map((stat, i) => (
+                          <Grid item xs={12} sm={6} md={4} lg={2.4} key={i}>
+                            <Box sx={{
+                              p: 2,
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 1
+                            }}>
+                              <Box sx={{ color: stat.color, display: 'flex' }}>{stat.icon}</Box>
+                              <Box>
+                                <Typography variant="caption" fontWeight={900} color="text.secondary" sx={{ fontSize: '0.65rem' }}>{stat.label.toUpperCase()}</Typography>
+                                <Typography variant="body2" fontWeight={900} color="secondary.main">{stat.value}</Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                        ))}
+                      </Grid>
+
+                      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          component={Link}
+                          to={`/batches/${batch._id}`}
+                          size="small"
+                          sx={{ py: 1, px: 4, borderRadius: 2, fontWeight: 900 }}
+                        >
+                          Batch Console
+                        </Button>
+                      </Box>
+                    </Box>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </Stack>
+          )}
+
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                shape="rounded"
+                size="large"
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    fontWeight: 900,
+                    borderRadius: 2,
+                    '&.Mui-selected': {
+                      boxShadow: '0 4px 12px rgba(232, 57, 29, 0.3)',
+                    }
+                  }
+                }}
+              />
+            </Box>
+          )}
 
 
           {/* Dialogs */}

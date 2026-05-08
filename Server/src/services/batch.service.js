@@ -61,10 +61,59 @@ export const createBatch = async (user, data) => {
 
 export const getBatches = async (user) => {
   const filter = user.role === ROLES.FACILITATOR ? { facilitator: user._id } : {};
-  return await Batch.find(filter)
+  const batches = await Batch.find(filter)
     .populate('course', 'name durationMonths')
     .populate('facilitator', 'name email')
     .populate('config');
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const batchesWithStats = await Promise.all(
+    batches.map(async (batch) => {
+      const studentCount = await User.countDocuments({ batch: batch._id, role: ROLES.STUDENT });
+      
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+      // Get today's attendance count (all marked, present or absent)
+      const Attendance = mongoose.model('Attendance');
+      const attendanceMarkedToday = await Attendance.countDocuments({
+        batch: batch._id,
+        date: { $gte: today, $lt: tomorrow }
+      });
+
+      const LeaveRequest = mongoose.model('LeaveRequest');
+      const pendingLeaves = await LeaveRequest.countDocuments({
+        batch: batch._id,
+        status: 'pending' // Based on LEAVE_STATUS.PENDING
+      });
+
+      const Interview = mongoose.model('Interview');
+      const upcomingInterviews = await Interview.countDocuments({
+        batch: batch._id,
+        scheduledDate: { $gte: today },
+        status: 'scheduled'
+      });
+
+      const ScrumCall = mongoose.model('ScrumCall');
+      const scrumRecord = await ScrumCall.findOne({
+        batch: batch._id,
+        date: { $gte: today, $lt: tomorrow }
+      });
+      const scrumCompleted = !!scrumRecord;
+
+      return {
+        ...batch.toObject(),
+        studentCount,
+        attendanceMarkedToday,
+        pendingLeaves,
+        upcomingInterviews,
+        scrumCompleted
+      };
+    })
+  );
+
+  return batchesWithStats;
 };
 
 export const getBatchById = async (user, batchId) => {

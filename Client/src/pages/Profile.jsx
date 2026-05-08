@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Button, 
-  Stack, 
-  Chip, 
-  Avatar, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Stack,
+  Chip,
+  Avatar,
   Divider,
   Paper,
   IconButton,
@@ -17,27 +17,39 @@ import {
   ThemeProvider,
   createTheme,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Tooltip,
+  CircularProgress
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { 
-  Mail, 
-  Phone, 
-  LocationOn, 
-  School, 
-  People, 
-  EmojiEvents, 
-  Code, 
+import {
+  Mail,
+  Phone,
+  LocationOn,
+  School,
+  People,
+  EmojiEvents,
+  Code,
   Assessment,
   Work,
   Description,
   Terminal,
   BarChart,
   VerifiedUser,
-  NavigateNext
+  NavigateNext,
+  PhotoCamera,
+  Edit,
+  Save,
+  Close
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
+import * as userApi from '../api/users.api';
 
 // Custom theme to match Staxhaus brand
 const theme = createTheme({
@@ -77,16 +89,89 @@ const theme = createTheme({
 });
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const fileInputRef = useRef(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    headline: user?.headline || '',
+    phone: user?.phone || '',
+    location: user?.location || '',
+    email: user?.email || ''
+  });
+
   const isInterviewer = user?.role === 'interviewer';
   const isFacilitator = user?.role === 'facilitator';
   const isStaff = isInterviewer || isFacilitator;
+
+  const handleEditOpen = () => {
+    setFormData({
+      name: user?.name || '',
+      headline: user?.headline || '',
+      phone: user?.phone || '',
+      location: user?.location || '',
+      email: user?.email || ''
+    });
+    setIsEditing(true);
+  };
+
+  const handleEditClose = () => setIsEditing(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const res = await userApi.updateMe(formData);
+      setUser(res.data);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append('profilePic', file);
+
+    setIsUploading(true);
+    try {
+      const res = await userApi.uploadProfilePic(uploadData);
+      setUser(res.data);
+    } catch (error) {
+      console.error('Error uploading profile pic:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const serverBase = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+
+  const getProfilePicUrl = () => {
+    if (!user?.profilePic) return null;
+    if (user.profilePic.startsWith('http')) return user.profilePic;
+    return `${serverBase}${user.profilePic}?t=${new Date().getTime()}`;
+  };
+
+  const profilePicUrl = getProfilePicUrl();
 
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6, pb: 8 }}>
-          
+
           {/* Header */}
           <Box sx={{
             pt: 4,
@@ -98,15 +183,15 @@ const Profile = () => {
             borderBottom: '1px solid #E5E7EB',
             mb: 3
           }}>
-            <Breadcrumbs 
-              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />} 
+            <Breadcrumbs
+              separator={<NavigateNext fontSize="small" sx={{ opacity: 0.5 }} />}
               sx={{ mb: 1.5 }}
             >
-              <MuiLink 
-                component={RouterLink} 
-                to="/dashboard" 
-                underline="none" 
-                color="text.secondary" 
+              <MuiLink
+                component={RouterLink}
+                to="/dashboard"
+                underline="none"
+                color="text.secondary"
                 sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
               >
                 DASHBOARD
@@ -139,35 +224,85 @@ const Profile = () => {
               </Box>
             </Box>
           </Box>
-          
+
           {/* Hero Profile Header */}
-          <Card sx={{ position: 'relative', overflow: 'hidden' }}>
-            <Box sx={{ 
-              position: 'absolute', 
-              top: 0, 
-              right: 0, 
-              width: 300, 
-              height: 300, 
-              bgcolor: 'primary.main', 
-              opacity: 0.03, 
-              borderRadius: '0 0 0 100%' 
+          <Card sx={{ 
+            position: 'relative', 
+            overflow: 'hidden',
+            '&:hover .edit-profile-btn': { 
+              opacity: 1, 
+              transform: 'translateX(0)',
+              pointerEvents: 'auto'
+            }
+          }}>
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 300,
+              height: 300,
+              bgcolor: 'primary.main',
+              opacity: 0.03,
+              borderRadius: '0 0 0 100%'
             }} />
             <CardContent sx={{ p: 6 }}>
               <Grid container spacing={6} alignItems="center">
                 <Grid item>
-                  <Avatar 
-                    sx={{ 
-                      width: 140, 
-                      height: 140, 
-                      bgcolor: 'secondary.main', 
-                      fontSize: '3rem', 
-                      fontWeight: 900, 
-                      borderRadius: 6,
-                      boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-                    }}
-                  >
-                    {user?.name?.[0]}
-                  </Avatar>
+                  <Box sx={{ 
+                    position: 'relative',
+                    '&:hover .upload-photo-btn': {
+                      opacity: 1,
+                      transform: 'scale(1)',
+                      pointerEvents: 'auto'
+                    }
+                  }}>
+                    <Avatar
+                      src={profilePicUrl}
+                      alt={user?.name}
+                      sx={{
+                        width: 140,
+                        height: 140,
+                        bgcolor: 'secondary.main',
+                        fontSize: '3rem',
+                        fontWeight: 900,
+                        borderRadius: 6,
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      {user?.name?.[0]}
+                    </Avatar>
+
+                    <input
+                      type="file"
+                      hidden
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/*"
+                    />
+
+                    <Tooltip title="Upload Photo">
+                      <IconButton
+                        className="upload-photo-btn"
+                        size="small"
+                        onClick={() => fileInputRef.current.click()}
+                        disabled={isUploading}
+                        sx={{
+                          position: 'absolute',
+                          bottom: -10,
+                          right: -10,
+                          bgcolor: 'white',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          opacity: 0,
+                          transform: 'scale(0.8)',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          pointerEvents: 'none',
+                          '&:hover': { bgcolor: '#f5f5f5' }
+                        }}
+                      >
+                        {isUploading ? <CircularProgress size={20} color="primary" /> : <PhotoCamera color="primary" />}
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Grid>
                 <Grid item xs={12} sm>
                   <Box>
@@ -176,18 +311,33 @@ const Profile = () => {
                       <VerifiedUser sx={{ color: 'primary.main' }} />
                     </Stack>
                     <Typography variant="body1" color="text.secondary" fontWeight={600} gutterBottom>
-                      {isInterviewer ? 'Official Technical Evaluator' : isFacilitator ? 'Lead Academic Facilitator' : 'Elite Student'} at Staxhaus
+                      {user?.headline || (isInterviewer ? 'Official Technical Evaluator' : isFacilitator ? 'Lead Academic Facilitator' : 'Elite Student')} at Staxhaus
                     </Typography>
-                    
+
                     <Stack direction="row" spacing={1} sx={{ mt: 3, flexWrap: 'wrap', gap: 1 }}>
                       <Chip label={`ROLE: ${user?.role?.toUpperCase()}`} color="primary" sx={{ fontWeight: 900, borderRadius: 2 }} />
-                      <Chip label={isStaff ? 'STAFF ID: STX-402' : 'STUDENT ID: STX-102'} variant="outlined" sx={{ fontWeight: 900, borderRadius: 2 }} />
+                      <Chip label={isStaff ? `STAFF ID: ${user?._id?.slice(-6).toUpperCase()}` : `STUDENT ID: ${user?._id?.slice(-6).toUpperCase()}`} variant="outlined" sx={{ fontWeight: 900, borderRadius: 2 }} />
                       <Chip label="STATUS: ACTIVE" color="success" sx={{ fontWeight: 900, borderRadius: 2 }} />
                     </Stack>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md="auto">
-                  <Button variant="contained" color="secondary" sx={{ borderRadius: 4 }}>Edit Profile</Button>
+                  <Button
+                    className="edit-profile-btn"
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<Edit />}
+                    onClick={handleEditOpen}
+                    sx={{ 
+                      borderRadius: 4,
+                      opacity: 0,
+                      transform: 'translateX(10px)',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      pointerEvents: 'none'
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
                 </Grid>
               </Grid>
             </CardContent>
@@ -200,7 +350,7 @@ const Profile = () => {
                 <Card>
                   <CardContent sx={{ p: 4 }}>
                     <Typography variant="h6" color="secondary" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                       <Mail sx={{ color: 'primary.main' }} /> Identity & Contact
+                      <Mail sx={{ color: 'primary.main' }} /> Identity & Contact
                     </Typography>
                     <Stack spacing={3}>
                       <Box>
@@ -209,11 +359,11 @@ const Profile = () => {
                       </Box>
                       <Box>
                         <Typography variant="caption" fontWeight={900} color="text.secondary">PHONE NUMBER</Typography>
-                        <Typography variant="body2" fontWeight={700}>+91 98765 43210</Typography>
+                        <Typography variant="body2" fontWeight={700}>{user?.phone || 'Not provided'}</Typography>
                       </Box>
                       <Box>
                         <Typography variant="caption" fontWeight={900} color="text.secondary">LOCATION</Typography>
-                        <Typography variant="body2" fontWeight={700}>Bangalore, India</Typography>
+                        <Typography variant="body2" fontWeight={700}>{user?.location || 'Not provided'}</Typography>
                       </Box>
                     </Stack>
                   </CardContent>
@@ -222,7 +372,7 @@ const Profile = () => {
                 <Card sx={{ bgcolor: 'secondary.main', color: 'white' }}>
                   <CardContent sx={{ p: 4 }}>
                     <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                       <EmojiEvents sx={{ color: 'primary.main' }} /> Achievements
+                      <EmojiEvents sx={{ color: 'primary.main' }} /> Achievements
                     </Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
                       {['React', 'NodeJS', 'MERN', 'DevOps'].map(skill => (
@@ -298,9 +448,9 @@ const Profile = () => {
                             <Code /> Github Pulse
                           </Typography>
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 3 }}>
-                             {Array.from({ length: 50 }).map((_, i) => (
-                               <Box key={i} sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: i % 7 === 0 ? 'primary.main' : 'action.hover' }} />
-                             ))}
+                            {Array.from({ length: 50 }).map((_, i) => (
+                              <Box key={i} sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: i % 7 === 0 ? 'primary.main' : 'action.hover' }} />
+                            ))}
                           </Box>
                           <Typography variant="caption" fontWeight={900} color="text.secondary">COMMITS SYNCED: 1,240</Typography>
                         </CardContent>
@@ -339,6 +489,109 @@ const Profile = () => {
 
         </Box>
       </AppShell>
+
+      {/* Edit Profile Dialog */}
+      <Dialog
+        open={isEditing}
+        onClose={handleEditClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 6, p: 2 }
+        }}
+      >
+        <DialogTitle sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          pb: 1
+        }}>
+          <Typography variant="h5" fontWeight={900} sx={{ fontFamily: 'Outfit' }}>
+            Edit Identity
+          </Typography>
+          <IconButton onClick={handleEditClose} size="small">
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <Divider sx={{ mb: 3 }} />
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <TextField
+            fullWidth
+            label="Full Name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            placeholder="e.g. Hrithic Raj"
+            InputProps={{ sx: { borderRadius: 3 } }}
+          />
+          <TextField
+            fullWidth
+            label="Headline / Title"
+            name="headline"
+            value={formData.headline}
+            onChange={handleInputChange}
+            placeholder="e.g. Lead Academic Facilitator"
+            InputProps={{ sx: { borderRadius: 3 } }}
+          />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="+91 98765 43210"
+                InputProps={{ sx: { borderRadius: 3 } }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="Bangalore, India"
+                InputProps={{ sx: { borderRadius: 3 } }}
+              />
+            </Grid>
+          </Grid>
+          <TextField
+            fullWidth
+            label="Email Address"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled
+            helperText="Contact admin to change official email"
+            InputProps={{ sx: { borderRadius: 3 } }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button
+            onClick={handleEditClose}
+            color="secondary"
+            sx={{ fontWeight: 900 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveProfile}
+            variant="contained"
+            color="primary"
+            startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+            disabled={isSaving}
+            sx={{
+              fontWeight: 900,
+              px: 4,
+              boxShadow: '0 4px 12px rgba(232, 57, 29, 0.2)'
+            }}
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </ThemeProvider>
   );
 };

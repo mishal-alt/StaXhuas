@@ -23,3 +23,34 @@ export const deleteUser = asyncHandler(async (req, res) => {
   await User.findByIdAndDelete(req.params.id);
   return apiResponse(res, 200, 'User deleted successfully');
 });
+
+export const updateMe = asyncHandler(async (req, res) => {
+  const { name, email, phone, location, headline } = req.body;
+  
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { name, email, phone, location, headline },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  if (!user) return apiResponse(res, 404, 'User not found');
+  
+  return apiResponse(res, 200, 'Profile updated successfully', user);
+});
+
+export const uploadProfilePic = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return apiResponse(res, 400, 'Please upload a file');
+  }
+
+  // With multer-storage-cloudinary, req.file.path is the Cloudinary URL
+  const profilePicPath = req.file.path;
+  
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { profilePic: profilePicPath },
+    { new: true }
+  ).select('-password');
+
+  return apiResponse(res, 200, 'Profile picture uploaded successfully', user);
+});

@@ -6,11 +6,20 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsPath = path.join(__dirname, '../uploads');
 
 const app = express();
 
 // Security Middlewares
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: false, // Stop blocking images across ports
+}));
 
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174', env.clientUrl],
@@ -30,6 +39,7 @@ app.use('/api', limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 // Logging
 if (env.nodeEnv === 'development') {
   app.use(morgan('dev'));
@@ -46,7 +56,16 @@ app.get('/', (req, res) => {
 // 404 Handler
 app.use(notFoundHandler);
 
-// Global Error Handler
-app.use(errorHandler);
+// Global Error Handler with detailed logging
+app.use((err, req, res, next) => {
+  if (req.path.includes('profile-pic')) {
+    console.error(' [UPLOAD ERROR] Detailed breakdown:', {
+      message: err.message,
+      stack: err.stack,
+      file: req.file
+    });
+  }
+  errorHandler(err, req, res, next);
+});
 
 export default app;

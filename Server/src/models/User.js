@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema(
       ref: 'Batch',
       default: null,
     },
+    profilePic: { type: String, default: null },
+    phone: { type: String, trim: true, default: '' },
+    location: { type: String, trim: true, default: '' },
+    headline: { type: String, trim: true, default: '' },
     // Track refresh token for logout
     refreshToken: { type: String, select: false },
   },
