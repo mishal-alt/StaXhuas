@@ -81,7 +81,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           fontWeight: 900,
-          borderRadius: 16,
+          borderRadius: 8,
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
           padding: '12px 24px',
@@ -101,7 +101,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 16,
+            borderRadius: 8,
           }
         }
       }
@@ -285,7 +285,7 @@ const CoursesAndBatches = () => {
               <Card key={i} sx={{
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' },
-                borderRadius: '24px',
+                borderRadius: '12px',
                 border: '1px solid rgba(0,0,0,0.05)',
                 height: { xs: 80, sm: 100 },
                 boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
@@ -306,7 +306,7 @@ const CoursesAndBatches = () => {
                     p: { xs: 1, sm: 1.2, md: 1.5 },
                     bgcolor: `${stat.color}10`,
                     color: stat.color,
-                    borderRadius: 2.5,
+                    borderRadius: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -364,7 +364,7 @@ const CoursesAndBatches = () => {
                   </InputAdornment>
                 ),
                 sx: {
-                  borderRadius: 4,
+                  borderRadius: '12px',
                   bgcolor: 'background.paper',
                   '& fieldset': { border: 'none' },
                   boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
@@ -577,7 +577,7 @@ const CoursesAndBatches = () => {
 
 
           {/* Dialogs */}
-          <Dialog open={showBatchForm} onClose={() => { setShowBatchForm(false); setEditingBatch(null); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 8 } }}>
+          <Dialog open={showBatchForm} onClose={() => { setShowBatchForm(false); setEditingBatch(null); }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '12px' } }}>
             <Box sx={{ p: 4 }}>
               <Typography variant="h6" fontWeight={900} sx={{ textTransform: 'uppercase', mb: 4 }}>
                 {editingBatch ? 'Edit Batch' : 'Create New Batch'}

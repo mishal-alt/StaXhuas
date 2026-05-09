@@ -3,7 +3,7 @@ import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { Logo } from "@/components/ui/logo";
 
-const AppShell = ({ children }) => {
+const AppShell = ({ children, fullWidth = false }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -25,8 +25,8 @@ const AppShell = ({ children }) => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-brand-light p-4 md:p-8">
-          <div className="max-w-7xl mx-auto w-full">
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-brand-light ${fullWidth ? 'py-8 px-0' : 'p-4 md:px-6 md:py-8'}`}>
+          <div className={`${fullWidth ? 'w-full max-w-none' : 'mx-auto w-full max-w-7xl'}`}>
             {children}
           </div>
         </main>

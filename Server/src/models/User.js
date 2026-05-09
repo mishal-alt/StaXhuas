@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, trim: true, default: '' },
     location: { type: String, trim: true, default: '' },
     headline: { type: String, trim: true, default: '' },
+    attendancePercentage: { type: Number, default: 0 },
+    leavesTaken: { type: Number, default: 0 },
+    currentModule: {
+      name: { type: String, default: 'Module 1' }
+    },
     // Track refresh token for logout
     refreshToken: { type: String, select: false },
   },
