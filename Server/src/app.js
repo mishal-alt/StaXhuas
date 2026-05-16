@@ -8,6 +8,8 @@ import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as googleController from './controllers/google.controller.js';
+import { protect } from './middleware/auth.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,7 +47,12 @@ if (env.nodeEnv === 'development') {
   app.use(morgan('dev'));
 }
 
-// Routes
+// Google Auth Routes (Mounted directly on app to guarantee they work)
+app.get('/api/google/auth', protect, googleController.initiateGoogleAuth);
+app.get('/api/auth/google', protect, googleController.initiateGoogleAuth); // Alias
+app.get('/api/google/callback', googleController.googleAuthCallback);
+
+// Main Routes
 app.use('/api', routes);
 
 // Base route for health check

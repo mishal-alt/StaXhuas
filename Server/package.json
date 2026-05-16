@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@googleapis/calendar": "^14.2.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
@@ -21,6 +22,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.4.1",
+    "google-auth-library": "^10.6.2",
     "helmet": "^8.1.0",
     "joi": "^18.1.2",
     "jsonwebtoken": "^9.0.3",

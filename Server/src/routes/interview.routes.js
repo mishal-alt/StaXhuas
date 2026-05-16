@@ -1,32 +1,26 @@
 import express from 'express';
+import { protect, restrictTo } from '../middleware/auth.middleware.js';
 import * as interviewController from '../controllers/interview.controller.js';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/role.middleware.js';
-import { validate } from '../middleware/validate.middleware.js';
-import { ROLES } from '../utils/constants.js';
-import { scheduleInterviewSchema, scoreInterviewSchema } from '../validators/interview.validator.js';
 
 const router = express.Router();
 
-router.use(authMiddleware);
+router.use(protect);
+// Assuming only admin/facilitator can access
+router.use(restrictTo('admin', 'facilitator'));
 
-router.post(
-  '/',
-  requireRole(ROLES.ADMIN, ROLES.FACILITATOR),
-  validate(scheduleInterviewSchema),
-  interviewController.schedule
-);
+router.route('/')
+  .post(interviewController.createInterview)
+  .get(interviewController.getInterviews);
 
-router.post(
-  '/:id/score',
-  requireRole(ROLES.ADMIN, ROLES.FACILITATOR),
-  validate(scoreInterviewSchema),
-  interviewController.score
-);
+router.route('/stats/:batchId')
+  .get(interviewController.getInterviewStats);
 
-router.get(
-  '/',
-  interviewController.getMyInterviews
-);
+router.route('/:id')
+  .get(interviewController.getInterviewById)
+  .patch(interviewController.updateInterview)
+  .delete(interviewController.deleteInterview);
+
+router.post('/:id/score', interviewController.recordScore);
+router.post('/:id/re-interview', interviewController.createReInterview);
 
 export default router;

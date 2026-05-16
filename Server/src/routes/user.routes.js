@@ -12,11 +12,10 @@ router.get('/me', (req, res) => userController.getUserById({ params: { id: req.u
 router.patch('/me', userController.updateMe);
 router.post('/me/profile-pic', upload.single('profilePic'), userController.uploadProfilePic);
 
-router.use(restrictTo(ROLES.ADMIN));
-
-router.get('/', userController.getUsersByRole);
-router.get('/:id', userController.getUserById);
-router.patch('/:id', userController.updateUser);
-router.delete('/:id', userController.deleteUser);
+// Explicit route permissions
+router.get('/', restrictTo(ROLES.ADMIN, ROLES.FACILITATOR), userController.getUsersByRole);
+router.get('/:id', restrictTo(ROLES.ADMIN, ROLES.FACILITATOR), userController.getUserById);
+router.patch('/:id', restrictTo(ROLES.ADMIN), userController.updateUser);
+router.delete('/:id', restrictTo(ROLES.ADMIN), userController.deleteUser);
 
 export default router;

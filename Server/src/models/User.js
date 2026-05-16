@@ -33,6 +33,8 @@ const userSchema = new mongoose.Schema(
     },
     // Track refresh token for logout
     refreshToken: { type: String, select: false },
+    googleRefreshToken: { type: String, select: false },
+    googleConnected: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
