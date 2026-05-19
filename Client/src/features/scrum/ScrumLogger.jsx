@@ -66,7 +66,7 @@ const ScrumLogger = ({ batchId }) => {
     mutationFn: (data) => scrumApi.logScrum({ ...data, batch: batchId }),
     onSuccess: () => {
       toast.success('Daily scrum logged successfully');
-      queryClient.invalidateQueries(['scrums', batchId]);
+      queryClient.invalidateQueries({ queryKey: ['scrums', batchId] });
       reset();
     },
     onError: (err) => toast.error(err.message || 'Failed to log scrum')

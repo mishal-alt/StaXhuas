@@ -18,18 +18,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, roles: [ROLES.ADMIN, ROLES.FACILITATOR, ROLES.STUDENT, ROLES.INTERVIEWER] },
 
     // Facilitator Exclusive (The 10-page list)
-    { name: 'Batches', path: '/courses', icon: <BookOpen size={20} />, roles: [ROLES.FACILITATOR] },
-    { name: 'Students', path: '/students', icon: <Users size={20} />, roles: [ROLES.FACILITATOR] },
+    { name: 'Batches', path: '/batches', icon: <BookOpen size={20} />, roles: [ROLES.FACILITATOR] },
     { name: 'Student Management', path: '/student-management', icon: <Calendar size={20} />, roles: [ROLES.FACILITATOR] },
-    { name: 'Leaves', path: '/leaves', icon: <ClipboardList size={20} />, roles: [ROLES.FACILITATOR] },
-    { name: 'Scrum Calls', path: '/scrum', icon: <Users size={20} />, roles: [ROLES.FACILITATOR] },
     { name: 'Interviews', path: '/interviews', icon: <BookOpenCheck size={20} />, roles: [ROLES.FACILITATOR] },
     { name: 'Invitations', path: '/invitations', icon: <Mail size={20} />, roles: [ROLES.FACILITATOR] },
     { name: 'Reports', path: '/reports', icon: <Trophy size={20} />, roles: [ROLES.FACILITATOR] },
 
     // Admin Exclusive
     { name: 'Staff Management', path: '/staff', icon: <Users size={20} />, roles: [ROLES.ADMIN] },
-    { name: 'Batch Management', path: '/courses', icon: <Layers size={20} />, roles: [ROLES.ADMIN] },
+    { name: 'Batch Management', path: '/batches', icon: <Layers size={20} />, roles: [ROLES.ADMIN] },
     { name: 'Course Management', path: '/course-management', icon: <BookOpen size={20} />, roles: [ROLES.ADMIN] },
     { name: 'Student Management', path: '/student-management', icon: <Calendar size={20} />, roles: [ROLES.ADMIN] },
     { name: 'All Invitations', path: '/invitations', icon: <Mail size={20} />, roles: [ROLES.ADMIN] },

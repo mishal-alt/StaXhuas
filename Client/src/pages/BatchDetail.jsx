@@ -210,7 +210,7 @@ const BatchDetail = () => {
   const scheduleMutation = useMutation({
     mutationFn: interviewApi.createInterview,
     onSuccess: () => {
-      queryClient.invalidateQueries(['interviews', id]);
+      queryClient.invalidateQueries({ queryKey: ['interviews', id] });
       toast.success('Interview scheduled successfully');
       setScheduleModalOpen(false);
     },
@@ -220,7 +220,7 @@ const BatchDetail = () => {
   const scoreMutation = useMutation({
     mutationFn: ({ intvId, data }) => interviewApi.recordScore(intvId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['interviews', id]);
+      queryClient.invalidateQueries({ queryKey: ['interviews', id] });
       toast.success('Score recorded successfully');
       setScoreModalOpen(false);
     },
@@ -230,7 +230,7 @@ const BatchDetail = () => {
   const reInterviewMutation = useMutation({
     mutationFn: ({ intvId, data }) => interviewApi.createReInterview(intvId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['interviews', id]);
+      queryClient.invalidateQueries({ queryKey: ['interviews', id] });
       toast.success('Re-interview scheduled successfully');
       setReInterviewModalOpen(false);
     },
@@ -240,7 +240,7 @@ const BatchDetail = () => {
   const updateInterviewMutation = useMutation({
     mutationFn: ({ intvId, data }) => interviewApi.updateInterview(intvId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['interviews', id]);
+      queryClient.invalidateQueries({ queryKey: ['interviews', id] });
       toast.success('Interview updated successfully');
       setScheduleModalOpen(false);
       setIsEditingInterview(false);
@@ -252,7 +252,7 @@ const BatchDetail = () => {
   const deleteInterviewMutation = useMutation({
     mutationFn: interviewApi.deleteInterview,
     onSuccess: () => {
-      queryClient.invalidateQueries(['interviews', id]);
+      queryClient.invalidateQueries({ queryKey: ['interviews', id] });
       toast.success('Interview deleted successfully');
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Error deleting interview')
@@ -408,7 +408,7 @@ const BatchDetail = () => {
     mutationFn: ({ studentId, data }) => studentApi.changeStudentStatus(studentId, data),
     onSuccess: () => {
       toast.success('Status updated');
-      queryClient.invalidateQueries(['students', id]);
+      queryClient.invalidateQueries({ queryKey: ['students', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to update status');
@@ -530,7 +530,7 @@ const BatchDetail = () => {
               </MuiLink>
               <MuiLink
                 component={Link}
-                to="/courses"
+                to="/batches"
                 underline="none"
                 color="text.secondary"
                 sx={{ fontSize: '0.75rem', fontWeight: 700, '&:hover': { color: 'primary.main' } }}
@@ -599,10 +599,10 @@ const BatchDetail = () => {
           <Box sx={{
             width: '100%',
             display: 'grid',
-            gridTemplateColumns: { 
-              xs: 'repeat(2, 1fr)', 
-              sm: 'repeat(4, 1fr)', 
-              md: 'repeat(4, 1fr)' 
+            gridTemplateColumns: {
+              xs: 'repeat(2, 1fr)',
+              sm: 'repeat(4, 1fr)',
+              md: 'repeat(4, 1fr)'
             },
             gap: 2,
             mb: 3
@@ -1465,9 +1465,9 @@ const BatchDetail = () => {
                     </Box>
                   </Box>
                   <Stack direction="row" spacing={2}>
-                    <Button 
-                      variant="outlined" color="secondary" size="small" 
-                      startIcon={<CalendarToday fontSize="small" />} 
+                    <Button
+                      variant="outlined" color="secondary" size="small"
+                      startIcon={<CalendarToday fontSize="small" />}
                       sx={{ borderRadius: 1.5, fontWeight: 800, textTransform: 'none' }}
                       onClick={() => {
                         const token = localStorage.getItem('accessToken');
@@ -1562,13 +1562,13 @@ const BatchDetail = () => {
                               </TableCell>
                               <TableCell>
                                 {intv.meetingLink ? (
-                                  <Button 
-                                    size="small" variant="outlined" 
-                                    startIcon={['passed', 'failed', 're_interview_required', 'completed'].includes(intv.status) ? null : <VideoCameraFront />} 
-                                    href={['passed', 'failed', 're_interview_required', 'completed'].includes(intv.status) ? null : intv.meetingLink} 
+                                  <Button
+                                    size="small" variant="outlined"
+                                    startIcon={['passed', 'failed', 're_interview_required', 'completed'].includes(intv.status) ? null : <VideoCameraFront />}
+                                    href={['passed', 'failed', 're_interview_required', 'completed'].includes(intv.status) ? null : intv.meetingLink}
                                     target="_blank"
                                     disabled={['passed', 'failed', 're_interview_required', 'completed'].includes(intv.status)}
-                                    sx={{ 
+                                    sx={{
                                       borderRadius: 1.5, textTransform: 'none', fontSize: '0.65rem', py: 0.5,
                                       borderColor: ['passed', 'failed', 're_interview_required', 'completed'].includes(intv.status) ? 'rgba(0,0,0,0.1)' : 'primary.main',
                                       color: ['passed', 'failed', 're_interview_required', 'completed'].includes(intv.status) ? 'text.disabled' : 'primary.main'
@@ -1703,260 +1703,260 @@ const BatchDetail = () => {
               </Box>
 
               {/* 3. Row 1: Attendance Trend & Interview Outcomes */}
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { xs: '1fr', md: '8fr 4fr' }, 
-                gap: 3, 
-                width: '100%' 
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '8fr 4fr' },
+                gap: 3,
+                width: '100%'
               }}>
                 <Card sx={{ height: '100%', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' }}>
-                    <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="subtitle2" fontWeight={900}>ATTENDANCE PERFORMANCE TREND</Typography>
-                      <Stack direction="row" spacing={1}>
-                        <Chip label="Current Week" size="small" sx={{ fontSize: '0.65rem', fontWeight: 800 }} />
-                      </Stack>
+                  <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="subtitle2" fontWeight={900}>ATTENDANCE PERFORMANCE TREND</Typography>
+                    <Stack direction="row" spacing={1}>
+                      <Chip label="Current Week" size="small" sx={{ fontSize: '0.65rem', fontWeight: 800 }} />
+                    </Stack>
+                  </Box>
+                  <CardContent sx={{ pt: 4 }}>
+                    <Box sx={{ height: 280, width: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={[
+                          { day: 'Mon', rate: 94 }, { day: 'Tue', rate: 88 }, { day: 'Wed', rate: 91 },
+                          { day: 'Thu', rate: 95 }, { day: 'Fri', rate: 89 }, { day: 'Sat', rate: 92 },
+                          { day: 'Sun', rate: 94 },
+                        ]}>
+                          <defs>
+                            <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#E8391D" stopOpacity={0.15} />
+                              <stop offset="95%" stopColor="#E8391D" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
+                          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#6B7280' }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#6B7280' }} domain={[0, 100]} />
+                          <RechartsTooltip
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', fontWeight: 800, fontSize: '0.85rem' }}
+                          />
+                          <Area type="monotone" dataKey="rate" stroke="#E8391D" strokeWidth={4} fillOpacity={1} fill="url(#colorRate)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
                     </Box>
-                    <CardContent sx={{ pt: 4 }}>
-                      <Box sx={{ height: 280, width: '100%' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={[
-                            { day: 'Mon', rate: 94 }, { day: 'Tue', rate: 88 }, { day: 'Wed', rate: 91 },
-                            { day: 'Thu', rate: 95 }, { day: 'Fri', rate: 89 }, { day: 'Sat', rate: 92 },
-                            { day: 'Sun', rate: 94 },
-                          ]}>
-                            <defs>
-                              <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#E8391D" stopOpacity={0.15} />
-                                <stop offset="95%" stopColor="#E8391D" stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
-                            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#6B7280' }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#6B7280' }} domain={[0, 100]} />
-                            <RechartsTooltip
-                              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', fontWeight: 800, fontSize: '0.85rem' }}
-                            />
-                            <Area type="monotone" dataKey="rate" stroke="#E8391D" strokeWidth={4} fillOpacity={1} fill="url(#colorRate)" />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </Box>
-                    </CardContent>
-                  </Card>
+                  </CardContent>
+                </Card>
                 <Card sx={{ height: '100%', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' }}>
-                    <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                      <Typography variant="subtitle2" fontWeight={900}>INTERVIEW OUTCOMES</Typography>
+                  <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    <Typography variant="subtitle2" fontWeight={900}>INTERVIEW OUTCOMES</Typography>
+                  </Box>
+                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100% - 65px)' }}>
+                    <Box sx={{ height: 260, width: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Passed', value: interviews.filter(i => i.status === 'passed').length || 1, color: '#2e7d32' },
+                              { name: 'Failed', value: interviews.filter(i => i.status === 'failed' || i.status === 're_interview_required').length || 0.1, color: '#d32f2f' },
+                              { name: 'Scheduled', value: interviews.filter(i => i.status === 'scheduled' || i.status === 'in_progress').length || 0.1, color: '#1565c0' },
+                            ]}
+                            innerRadius={70}
+                            outerRadius={95}
+                            paddingAngle={8}
+                            dataKey="value"
+                          >
+                            {[0, 1, 2].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={['#2e7d32', '#d32f2f', '#1565c0'][index]} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip />
+                          <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '0.75rem', fontWeight: 700 }} />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </Box>
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100% - 65px)' }}>
-                      <Box sx={{ height: 260, width: '100%' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={[
-                                { name: 'Passed', value: interviews.filter(i => i.status === 'passed').length || 1, color: '#2e7d32' },
-                                { name: 'Failed', value: interviews.filter(i => i.status === 'failed' || i.status === 're_interview_required').length || 0.1, color: '#d32f2f' },
-                                { name: 'Scheduled', value: interviews.filter(i => i.status === 'scheduled' || i.status === 'in_progress').length || 0.1, color: '#1565c0' },
-                              ]}
-                              innerRadius={70}
-                              outerRadius={95}
-                              paddingAngle={8}
-                              dataKey="value"
-                            >
-                              {[0, 1, 2].map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={['#2e7d32', '#d32f2f', '#1565c0'][index]} />
-                              ))}
-                            </Pie>
-                            <RechartsTooltip />
-                            <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '0.75rem', fontWeight: 700 }} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </Box>
-                    </CardContent>
-                  </Card>
+                  </CardContent>
+                </Card>
               </Box>
 
               {/* 4. Row 2: Leave Usage & Scrum Trend */}
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { xs: '1fr', md: '5fr 7fr' }, 
-                gap: 3, 
-                width: '100%' 
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '5fr 7fr' },
+                gap: 3,
+                width: '100%'
               }}>
                 <Card sx={{ height: '100%', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
-                    <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                      <Typography variant="subtitle2" fontWeight={900}>LEAVE DISTRIBUTION</Typography>
+                  <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    <Typography variant="subtitle2" fontWeight={900}>LEAVE DISTRIBUTION</Typography>
+                  </Box>
+                  <CardContent>
+                    <Box sx={{ height: 240 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={[
+                          { type: 'Sick', count: 12 },
+                          { type: 'Casual', count: 8 },
+                          { type: 'Emergency', count: 4 },
+                          { type: 'Other', count: 2 },
+                        ]} layout="vertical" margin={{ left: -10, right: 20 }}>
+                          <XAxis type="number" hide />
+                          <YAxis dataKey="type" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 800, fill: '#1E2126' }} />
+                          <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={24}>
+                            {[0, 1, 2, 3].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={['#1E2126', '#E8391D', '#e65100', '#7b1fa2'][index]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
                     </Box>
-                    <CardContent>
-                      <Box sx={{ height: 240 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={[
-                            { type: 'Sick', count: 12 },
-                            { type: 'Casual', count: 8 },
-                            { type: 'Emergency', count: 4 },
-                            { type: 'Other', count: 2 },
-                          ]} layout="vertical" margin={{ left: -10, right: 20 }}>
-                            <XAxis type="number" hide />
-                            <YAxis dataKey="type" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 800, fill: '#1E2126' }} />
-                            <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={24}>
-                              {[0, 1, 2, 3].map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={['#1E2126', '#E8391D', '#e65100', '#7b1fa2'][index]} />
-                              ))}
-                            </Bar>
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </Box>
-                      <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={800}>TOTAL REQUESTS: 26</Typography>
-                      </Box>
-                    </CardContent>
-                  </Card>
+                    <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={800}>TOTAL REQUESTS: 26</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
                 <Card sx={{ height: '100%', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
-                    <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                      <Typography variant="subtitle2" fontWeight={900}>SCRUM COMPLETION RATE (%)</Typography>
+                  <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    <Typography variant="subtitle2" fontWeight={900}>SCRUM COMPLETION RATE (%)</Typography>
+                  </Box>
+                  <CardContent sx={{ pt: 3 }}>
+                    <Box sx={{ height: 260 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={[
+                          { date: '05/10', rate: 98 }, { date: '05/11', rate: 92 }, { date: '05/12', rate: 100 },
+                          { date: '05/13', rate: 85 }, { date: '05/14', rate: 96 }, { date: '05/15', rate: 94 },
+                          { date: '05/16', rate: 97 },
+                        ]}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                          <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700 }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700 }} domain={[0, 100]} />
+                          <Bar dataKey="rate" fill="#7b1fa2" radius={[6, 6, 0, 0]} barSize={35} />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </Box>
-                    <CardContent sx={{ pt: 3 }}>
-                      <Box sx={{ height: 260 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={[
-                            { date: '05/10', rate: 98 }, { date: '05/11', rate: 92 }, { date: '05/12', rate: 100 },
-                            { date: '05/13', rate: 85 }, { date: '05/14', rate: 96 }, { date: '05/15', rate: 94 },
-                            { date: '05/16', rate: 97 },
-                          ]}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700 }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700 }} domain={[0, 100]} />
-                            <Bar dataKey="rate" fill="#7b1fa2" radius={[6, 6, 0, 0]} barSize={35} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </Box>
-                    </CardContent>
-                  </Card>
+                  </CardContent>
+                </Card>
               </Box>
 
               {/* 5. Row 3: Risk Table (8) & Alerts/Leaderboard (4) */}
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { xs: '1fr', lg: '8fr 4fr' }, 
-                gap: 3, 
-                width: '100%' 
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', lg: '8fr 4fr' },
+                gap: 3,
+                width: '100%'
               }}>
                 <Card sx={{ height: '100%', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
                   <Box sx={{ p: 2.5, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'rgba(211,47,47,0.02)' }}>
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Warning sx={{ color: '#d32f2f' }} />
-                        <Typography variant="subtitle2" fontWeight={900} color="#d32f2f">PRIORITY RISK MONITORING</Typography>
-                      </Stack>
-                      <Button size="small" sx={{ fontSize: '0.65rem', color: '#d32f2f', fontWeight: 900 }}>Export List</Button>
-                    </Box>
-                    <TableContainer>
-                      <Table size="small">
-                        <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.03)' }}>
-                          <TableRow>
-                            <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem', py: 2 }}>STUDENT</TableCell>
-                            <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem' }}>RISK</TableCell>
-                            <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem' }}>ATTENDANCE</TableCell>
-                            <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem' }}>INT. SCORE</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 900, fontSize: '0.7rem' }}>ACTION</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {students.slice(0, 5).map((student, idx) => {
-                            const isRisk = attendanceMap[student._id] === 'A' || idx === 0 || idx === 2;
-                            return (
-                              <TableRow key={student._id} sx={{ '&:hover': { bgcolor: 'rgba(0,0,0,0.01)' } }}>
-                                <TableCell sx={{ py: 2 }}>
-                                  <Stack direction="row" spacing={1.5} alignItems="center">
-                                    <Avatar sx={{ width: 30, height: 30, fontSize: '0.75rem', fontWeight: 900, bgcolor: 'secondary.main', borderRadius: 1.5 }}>{student.name[0]}</Avatar>
-                                    <Box>
-                                      <Typography variant="body2" fontWeight={800} color="secondary" sx={{ fontSize: '0.8rem', lineHeight: 1 }}>{student.name}</Typography>
-                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>{student.email}</Typography>
-                                    </Box>
-                                  </Stack>
-                                </TableCell>
-                                <TableCell>
-                                  <Chip
-                                    label={isRisk ? "CRITICAL" : "LOW"}
-                                    size="small"
-                                    sx={{
-                                      height: 20, fontSize: '0.6rem', fontWeight: 900,
-                                      bgcolor: isRisk ? 'rgba(211,47,47,0.1)' : 'rgba(46,125,50,0.1)',
-                                      color: isRisk ? '#d32f2f' : '#2e7d32',
-                                      borderRadius: 1.5
-                                    }}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Typography variant="body2" fontWeight={800} color={isRisk ? "error.main" : "secondary"}>{isRisk ? "64%" : "98%"}</Typography>
-                                    <LinearProgress variant="determinate" value={isRisk ? 64 : 98} sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.06)', '& .MuiLinearProgress-bar': { bgcolor: isRisk ? '#d32f2f' : '#2e7d32' } }} />
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Warning sx={{ color: '#d32f2f' }} />
+                      <Typography variant="subtitle2" fontWeight={900} color="#d32f2f">PRIORITY RISK MONITORING</Typography>
+                    </Stack>
+                    <Button size="small" sx={{ fontSize: '0.65rem', color: '#d32f2f', fontWeight: 900 }}>Export List</Button>
+                  </Box>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.03)' }}>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem', py: 2 }}>STUDENT</TableCell>
+                          <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem' }}>RISK</TableCell>
+                          <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem' }}>ATTENDANCE</TableCell>
+                          <TableCell sx={{ fontWeight: 900, fontSize: '0.7rem' }}>INT. SCORE</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 900, fontSize: '0.7rem' }}>ACTION</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {students.slice(0, 5).map((student, idx) => {
+                          const isRisk = attendanceMap[student._id] === 'A' || idx === 0 || idx === 2;
+                          return (
+                            <TableRow key={student._id} sx={{ '&:hover': { bgcolor: 'rgba(0,0,0,0.01)' } }}>
+                              <TableCell sx={{ py: 2 }}>
+                                <Stack direction="row" spacing={1.5} alignItems="center">
+                                  <Avatar sx={{ width: 30, height: 30, fontSize: '0.75rem', fontWeight: 900, bgcolor: 'secondary.main', borderRadius: 1.5 }}>{student.name[0]}</Avatar>
+                                  <Box>
+                                    <Typography variant="body2" fontWeight={800} color="secondary" sx={{ fontSize: '0.8rem', lineHeight: 1 }}>{student.name}</Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>{student.email}</Typography>
                                   </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Typography variant="body2" fontWeight={800} color={isRisk ? "error.main" : "primary.main"}>{isRisk ? "Failed" : "28/40"}</Typography>
-                                </TableCell>
-                                <TableCell align="right">
-                                  <Button size="small" variant="contained" sx={{ py: 0.5, px: 1, minWidth: 0, fontSize: '0.65rem', borderRadius: 1.5, bgcolor: isRisk ? '#d32f2f' : 'secondary.main' }}>Resolve</Button>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
+                                </Stack>
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={isRisk ? "CRITICAL" : "LOW"}
+                                  size="small"
+                                  sx={{
+                                    height: 20, fontSize: '0.6rem', fontWeight: 900,
+                                    bgcolor: isRisk ? 'rgba(211,47,47,0.1)' : 'rgba(46,125,50,0.1)',
+                                    color: isRisk ? '#d32f2f' : '#2e7d32',
+                                    borderRadius: 1.5
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2" fontWeight={800} color={isRisk ? "error.main" : "secondary"}>{isRisk ? "64%" : "98%"}</Typography>
+                                  <LinearProgress variant="determinate" value={isRisk ? 64 : 98} sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.06)', '& .MuiLinearProgress-bar': { bgcolor: isRisk ? '#d32f2f' : '#2e7d32' } }} />
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2" fontWeight={800} color={isRisk ? "error.main" : "primary.main"}>{isRisk ? "Failed" : "28/40"}</Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Button size="small" variant="contained" sx={{ py: 0.5, px: 1, minWidth: 0, fontSize: '0.65rem', borderRadius: 1.5, bgcolor: isRisk ? '#d32f2f' : 'secondary.main' }}>Resolve</Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Card>
                 <Stack spacing={3} sx={{ height: '100%' }}>
-                    {/* Alerts Card */}
-                    <Card sx={{ border: '1px solid rgba(232, 57, 29, 0.15)', bgcolor: 'rgba(232, 57, 29, 0.02)' }}>
-                      <Box sx={{ p: 2, borderBottom: '1px solid rgba(232, 57, 29, 0.1)', display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Warning sx={{ fontSize: 18, color: 'primary.main' }} />
-                        <Typography variant="subtitle2" fontWeight={900} color="primary.main">OPERATIONAL ALERTS</Typography>
-                      </Box>
-                      <CardContent sx={{ p: 2 }}>
-                        <Stack spacing={1.5}>
-                          {[
-                            { text: 'Ahmed Khan leave limit nearing (9/10)', type: 'error' },
-                            { text: '3 students below 75% attendance', type: 'warning' },
-                            { text: 'Interviews pending evaluation: 4', type: 'info' },
-                          ].map((alert, i) => (
-                            <Box key={i} sx={{ display: 'flex', gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid rgba(0,0,0,0.04)' }}>
-                              <Box sx={{ width: 4, height: 'auto', borderRadius: 2, bgcolor: alert.type === 'error' ? '#d32f2f' : alert.type === 'warning' ? '#ed6c02' : '#0288d1' }} />
-                              <Typography variant="caption" fontWeight={800} color="secondary" sx={{ lineHeight: 1.4 }}>{alert.text}</Typography>
-                            </Box>
-                          ))}
-                        </Stack>
-                      </CardContent>
-                    </Card>
+                  {/* Alerts Card */}
+                  <Card sx={{ border: '1px solid rgba(232, 57, 29, 0.15)', bgcolor: 'rgba(232, 57, 29, 0.02)' }}>
+                    <Box sx={{ p: 2, borderBottom: '1px solid rgba(232, 57, 29, 0.1)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Warning sx={{ fontSize: 18, color: 'primary.main' }} />
+                      <Typography variant="subtitle2" fontWeight={900} color="primary.main">OPERATIONAL ALERTS</Typography>
+                    </Box>
+                    <CardContent sx={{ p: 2 }}>
+                      <Stack spacing={1.5}>
+                        {[
+                          { text: 'Ahmed Khan leave limit nearing (9/10)', type: 'error' },
+                          { text: '3 students below 75% attendance', type: 'warning' },
+                          { text: 'Interviews pending evaluation: 4', type: 'info' },
+                        ].map((alert, i) => (
+                          <Box key={i} sx={{ display: 'flex', gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid rgba(0,0,0,0.04)' }}>
+                            <Box sx={{ width: 4, height: 'auto', borderRadius: 2, bgcolor: alert.type === 'error' ? '#d32f2f' : alert.type === 'warning' ? '#ed6c02' : '#0288d1' }} />
+                            <Typography variant="caption" fontWeight={800} color="secondary" sx={{ lineHeight: 1.4 }}>{alert.text}</Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </CardContent>
+                  </Card>
 
-                    {/* Leaderboard Card */}
-                    <Card sx={{ flexGrow: 1, border: '1px solid rgba(0,0,0,0.06)' }}>
-                      <Box sx={{ p: 2, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <TrendingUp sx={{ fontSize: 18, color: '#2e7d32' }} />
-                        <Typography variant="subtitle2" fontWeight={900}>TOP PERFORMERS</Typography>
-                      </Box>
-                      <CardContent sx={{ p: 2 }}>
-                        <Stack spacing={2}>
-                          {[
-                            { name: 'Sara Ali', stat: '98.5% Score', badge: 'GOLD' },
-                            { name: 'Umar Farooq', stat: '96.2% Score', badge: 'SILVER' },
-                            { name: 'Zaid Mirza', stat: '95.0% Score', badge: 'BRONZE' },
-                          ].map((st, idx) => (
-                            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)' }}>
-                              <Avatar sx={{
-                                mr: 2,
-                                width: 28, height: 28,
-                                bgcolor: idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32',
-                                fontWeight: 900, fontSize: '0.7rem', color: 'white'
-                              }}>{idx + 1}</Avatar>
-                              <Box sx={{ flex: 1 }}>
-                                <Typography variant="body2" fontWeight={900} sx={{ fontSize: '0.75rem' }}>{st.name}</Typography>
-                                <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ fontSize: '0.6rem' }}>{st.badge}</Typography>
-                              </Box>
-                              <Typography variant="subtitle2" fontWeight={900} color="primary.main">{st.stat}</Typography>
+                  {/* Leaderboard Card */}
+                  <Card sx={{ flexGrow: 1, border: '1px solid rgba(0,0,0,0.06)' }}>
+                    <Box sx={{ p: 2, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TrendingUp sx={{ fontSize: 18, color: '#2e7d32' }} />
+                      <Typography variant="subtitle2" fontWeight={900}>TOP PERFORMERS</Typography>
+                    </Box>
+                    <CardContent sx={{ p: 2 }}>
+                      <Stack spacing={2}>
+                        {[
+                          { name: 'Sara Ali', stat: '98.5% Score', badge: 'GOLD' },
+                          { name: 'Umar Farooq', stat: '96.2% Score', badge: 'SILVER' },
+                          { name: 'Zaid Mirza', stat: '95.0% Score', badge: 'BRONZE' },
+                        ].map((st, idx) => (
+                          <Box key={idx} sx={{ display: 'flex', alignItems: 'center', p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)' }}>
+                            <Avatar sx={{
+                              mr: 2,
+                              width: 28, height: 28,
+                              bgcolor: idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32',
+                              fontWeight: 900, fontSize: '0.7rem', color: 'white'
+                            }}>{idx + 1}</Avatar>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="body2" fontWeight={900} sx={{ fontSize: '0.75rem' }}>{st.name}</Typography>
+                              <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ fontSize: '0.6rem' }}>{st.badge}</Typography>
                             </Box>
-                          ))}
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Stack>
+                            <Typography variant="subtitle2" fontWeight={900} color="primary.main">{st.stat}</Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Stack>
               </Box>
 
             </Box>
@@ -2160,11 +2160,11 @@ const BatchDetail = () => {
             </Stack>
             <FormControl fullWidth size="small">
               <InputLabel>Mode</InputLabel>
-              <Select 
-                label="Mode" 
-                value={scheduleForm.mode} 
-                onChange={(e) => setScheduleForm({ 
-                  ...scheduleForm, 
+              <Select
+                label="Mode"
+                value={scheduleForm.mode}
+                onChange={(e) => setScheduleForm({
+                  ...scheduleForm,
                   mode: e.target.value,
                   generateMeetLink: e.target.value === 'online'
                 })}
@@ -2292,11 +2292,11 @@ const BatchDetail = () => {
             </Stack>
             <FormControl fullWidth size="small">
               <InputLabel>Mode</InputLabel>
-              <Select 
-                label="Mode" 
-                value={scheduleForm.mode} 
-                onChange={(e) => setScheduleForm({ 
-                  ...scheduleForm, 
+              <Select
+                label="Mode"
+                value={scheduleForm.mode}
+                onChange={(e) => setScheduleForm({
+                  ...scheduleForm,
                   mode: e.target.value,
                   generateMeetLink: e.target.value === 'online'
                 })}

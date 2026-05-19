@@ -53,14 +53,14 @@ export const logScrumCall = async (facilitator, data) => {
     // We update the daily attendance. If the attendance is already "Leave", we don't overwrite it.
     // If they were absent from scrum, we set them to absent if they don't have a leave.
     const attendanceOperations = [];
-    
+
     // First, find existing attendance records for these students on this day
     const studentIds = entries.map(e => e.student);
     const existingAttendance = await Attendance.find({
       student: { $in: studentIds },
       date: scrumDate
     }).session(session);
-    
+
     const attendanceMap = {};
     existingAttendance.forEach(a => { attendanceMap[a.student.toString()] = a.status; });
 
@@ -139,7 +139,7 @@ export const getScrumCallsByBatch = async (user, batchId) => {
   }
 
   const scrums = await ScrumCall.find({ batch: batchId }).sort('-date');
-  
+
   // We attach entries to each scrum
   const results = [];
   for (const scrum of scrums) {

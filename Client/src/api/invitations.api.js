@@ -1,7 +1,7 @@
 import api from './axios';
 
 export const inviteStudent = async (data) => {
-  return await api.post('/invitations/create', data);
+  return await api.post('/invitations', data);
 };
 
 export const getInvitations = async (status = 'pending') => {

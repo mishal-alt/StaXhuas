@@ -50,7 +50,7 @@ const LeaveInbox = ({ batchId }) => {
     mutationFn: ({ leaveId, data }) => leaveApi.reviewLeave(leaveId, data),
     onSuccess: () => {
       toast.success('Leave request processed');
-      queryClient.invalidateQueries(['leaves', batchId]);
+      queryClient.invalidateQueries({ queryKey: ['leaves', batchId] });
       setRemarkOpen(false);
       setRemarkText('');
     },

@@ -141,7 +141,7 @@ const CoursesAndBatches = () => {
     mutationFn: (data) => editingBatch ? batchApi.updateBatch(editingBatch._id, data) : batchApi.createBatch(data),
     onSuccess: () => {
       toast.success(`Batch ${editingBatch ? 'updated' : 'created'} successfully`);
-      queryClient.invalidateQueries(['batches']);
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
       setShowBatchForm(false);
       setEditingBatch(null);
       resetBatch();
@@ -153,7 +153,7 @@ const CoursesAndBatches = () => {
     mutationFn: batchApi.deleteBatch,
     onSuccess: () => {
       toast.success('Batch deleted successfully');
-      queryClient.invalidateQueries(['batches']);
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
     },
     onError: (err) => toast.error(err.message || 'Failed to delete batch'),
   });

@@ -64,6 +64,7 @@ export const getInterviews = async (filters = {}) => {
   if (filters.batch) query.batch = filters.batch;
   if (filters.student) query.student = filters.student;
   if (filters.interviewer) query.interviewer = filters.interviewer;
+  if (filters.facilitator) query.facilitator = filters.facilitator;
   if (filters.status && filters.status !== 'All') query.status = filters.status;
 
   if (filters.search) {
@@ -76,6 +77,7 @@ export const getInterviews = async (filters = {}) => {
     .populate('student', 'name email avatar')
     .populate('interviewer', 'name email avatar')
     .populate('facilitator', 'name email')
+    .populate('batch', 'name')
     .sort({ scheduledDate: 1, scheduledTime: 1 });
 };
 

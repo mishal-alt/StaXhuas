@@ -42,7 +42,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/accept-invite" element={<PublicRoute><AcceptInvite /></PublicRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/courses" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR]}><CoursesAndBatches /></ProtectedRoute>} />
+      <Route path="/batches" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR]}><CoursesAndBatches /></ProtectedRoute>} />
       <Route path="/batches/:id" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR]}><BatchDetail /></ProtectedRoute>} />
       <Route path="/student-management" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR, ROLES.STUDENT]}><StudentManagement /></ProtectedRoute>} />
       <Route path="/leaves" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.FACILITATOR, ROLES.STUDENT]}><Leaves /></ProtectedRoute>} />

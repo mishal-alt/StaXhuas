@@ -125,7 +125,7 @@ const StudentAttendanceAndLeaves = () => {
     mutationFn: leaveApi.applyLeave,
     onSuccess: () => {
       toast.success('Leave request submitted!');
-      queryClient.invalidateQueries(['my-leaves']);
+      queryClient.invalidateQueries({ queryKey: ['my-leaves'] });
       setShowRequestForm(false);
       reset();
     },

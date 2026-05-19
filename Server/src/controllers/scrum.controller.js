@@ -11,3 +11,4 @@ export const getScrums = asyncHandler(async (req, res) => {
   const scrums = await scrumService.getScrumCallsByBatch(req.user, req.params.batchId);
   return apiResponse(res, 200, 'Scrum calls retrieved successfully', scrums);
 });
+

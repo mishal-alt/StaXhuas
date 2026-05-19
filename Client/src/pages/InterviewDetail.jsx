@@ -109,7 +109,7 @@ const InterviewDetail = () => {
     mutationFn: (data) => interviewApi.scoreInterview(id, data),
     onSuccess: () => {
       toast.success('Feedback submitted successfully');
-      queryClient.invalidateQueries(['interview', id]);
+      queryClient.invalidateQueries({ queryKey: ['interview', id] });
       navigate('/my-interviews');
     },
     onError: (err) => {

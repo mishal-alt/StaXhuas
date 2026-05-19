@@ -117,7 +117,7 @@ const StaffManagement = () => {
     mutationFn: invitationApi.inviteStudent,
     onSuccess: () => {
       toast.success('Invitation sent successfully');
-      queryClient.invalidateQueries(['invitations']);
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
       setShowInviteForm(false);
       reset();
     },
@@ -128,7 +128,7 @@ const StaffManagement = () => {
     mutationFn: ({ id, data }) => userApi.updateUser(id, data),
     onSuccess: () => {
       toast.success('Staff updated successfully');
-      queryClient.invalidateQueries(['staff']);
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
       setEditingStaff(null);
     },
     onError: (err) => toast.error(err.message || 'Failed to update staff')
@@ -138,7 +138,7 @@ const StaffManagement = () => {
     mutationFn: userApi.deleteUser,
     onSuccess: () => {
       toast.success('Staff member removed');
-      queryClient.invalidateQueries(['staff']);
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
     },
     onError: (err) => toast.error(err.message || 'Failed to remove staff')
   });

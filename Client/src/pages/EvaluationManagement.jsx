@@ -36,6 +36,11 @@ import {
 } from '@mui/icons-material';
 
 import AppShell from '../components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import * as interviewApi from '../api/interview.api';
+import { useAuth } from '../context/AuthContext';
+import { ROLES } from '../utils/constants';
+import { Groups } from '@mui/icons-material';
 
 // Custom theme to match Staxhaus brand
 const theme = createTheme({
@@ -74,13 +79,29 @@ const theme = createTheme({
   }
 });
 
-const DUMMY_EVALUATIONS = [
-  { id: 1, student: 'Hrithic Raj', module: 'Module 4: React Advanced', interviewer: 'Sandeep K', status: 'Completed', score: 85 },
-  { id: 2, student: 'Ananya S', module: 'Module 4: React Advanced', interviewer: 'Sandeep K', status: 'Scheduled', score: null },
-  { id: 3, student: 'Sneha Kapoor', module: 'Module 2: Node.js Basics', interviewer: 'Rahul P', status: 'Failed', score: 45 },
-];
+// Real data will be fetched via React Query
 
 const EvaluationManagement = () => {
+  const { user } = useAuth();
+  
+  const { data: interviewsRes, isLoading } = useQuery({
+    queryKey: ['all-interviews', user?._id],
+    queryFn: () => interviewApi.getInterviews(
+      user?.role === ROLES.FACILITATOR ? { facilitator: user._id } : {}
+    ),
+    enabled: !!user?._id
+  });
+
+  const interviews = Array.isArray(interviewsRes) ? interviewsRes : (interviewsRes?.data?.data || interviewsRes?.data || []);
+
+  // Stats calculation
+  const toSchedule = interviews.filter(i => i.status === 'scheduled').length;
+  const pendingScores = interviews.filter(i => i.status === 'in_progress').length;
+  const completed = interviews.filter(i => i.status === 'passed' || i.status === 'failed').length;
+  const passed = interviews.filter(i => i.status === 'passed').length;
+  const passRate = completed > 0 ? Math.round((passed / completed) * 100) : 0;
+  const reInterviews = interviews.filter(i => i.status === 're_interview_required').length;
+
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
@@ -146,10 +167,10 @@ const EvaluationManagement = () => {
             mb: 2
           }}>
             {[
-              { label: 'To Schedule', count: '05', color: '#E8391D', icon: <Schedule /> },
-              { label: 'Pending Scores', count: '02', color: '#1E2126', icon: <Assignment /> },
-              { label: 'Pass Rate', count: '92%', color: '#2e7d32', icon: <CheckCircle /> },
-              { label: 'Re-Interviews', count: '01', color: '#d32f2f', icon: <Info /> },
+              { label: 'To Schedule', count: String(toSchedule).padStart(2, '0'), color: '#E8391D', icon: <Schedule /> },
+              { label: 'Pending Scores', count: String(pendingScores).padStart(2, '0'), color: '#1E2126', icon: <Assignment /> },
+              { label: 'Pass Rate', count: `${passRate}%`, color: '#2e7d32', icon: <CheckCircle /> },
+              { label: 'Re-Interviews', count: String(reInterviews).padStart(2, '0'), color: '#d32f2f', icon: <Info /> },
             ].map((stat, i) => (
               <Card key={i} sx={{
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -227,6 +248,7 @@ const EvaluationManagement = () => {
                 <TableHead sx={{ bgcolor: 'action.hover' }}>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', py: 3 }}>Student & Module</TableCell>
+                    <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Batch</TableCell>
                     <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Interviewer</TableCell>
                     <TableCell align="center" sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Score</TableCell>
@@ -234,41 +256,65 @@ const EvaluationManagement = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {DUMMY_EVALUATIONS.map((evalItem) => (
-                    <TableRow key={evalItem.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
+                        <Typography variant="body2" color="text.secondary" fontWeight={700}>LOADING INTERVIEWS...</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : interviews.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
+                        <Typography variant="body2" color="text.secondary" fontWeight={700}>NO INTERVIEWS FOUND</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : interviews.map((evalItem) => (
+                    <TableRow key={evalItem._id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                       <TableCell sx={{ py: 3 }}>
                         <Box>
-                          <Typography variant="subtitle2" fontWeight={800} color="secondary">{evalItem.student}</Typography>
-                          <Typography variant="caption" color="text.secondary" fontWeight={700}>{evalItem.module.toUpperCase()}</Typography>
+                          <Typography variant="subtitle2" fontWeight={800} color="secondary">{evalItem.student?.name || 'Unknown Student'}</Typography>
+                          <Typography variant="caption" color="text.secondary" fontWeight={700}>{evalItem.module?.toUpperCase()}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1} alignItems="center">
+                          <Groups sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="body2" fontWeight={700}>{evalItem.batch?.name || 'N/A'}</Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
                           <Person sx={{ fontSize: 16, color: 'text.secondary' }} />
-                          <Typography variant="body2" fontWeight={700}>{evalItem.interviewer}</Typography>
+                          <Typography variant="body2" fontWeight={700}>{evalItem.interviewer?.name || 'Not Assigned'}</Typography>
                         </Stack>
                       </TableCell>
                       <TableCell align="center">
                         <Chip
-                          label={evalItem.status}
+                          label={evalItem.status?.replace('_', ' ').toUpperCase()}
                           size="small"
-                          color={evalItem.status === 'Completed' ? 'success' : evalItem.status === 'Scheduled' ? 'info' : 'error'}
-                          sx={{ fontWeight: 900, borderRadius: 2 }}
+                          color={evalItem.status === 'passed' ? 'success' : evalItem.status === 'scheduled' ? 'info' : evalItem.status === 'failed' ? 'error' : 'warning'}
+                          sx={{ fontWeight: 900, borderRadius: 2, fontSize: '0.65rem' }}
                         />
                       </TableCell>
                       <TableCell>
-                        {evalItem.score ? (
+                        {evalItem.score !== undefined && evalItem.score !== null ? (
                           <Stack direction="row" spacing={0.5} alignItems="center">
                             <Star sx={{ color: '#FFB400', fontSize: 18 }} />
-                            <Typography variant="subtitle2" fontWeight={900}>{evalItem.score}/100</Typography>
+                            <Typography variant="subtitle2" fontWeight={900}>{evalItem.score}/{evalItem.maxScore || 100}</Typography>
                           </Stack>
                         ) : (
                           <Typography variant="caption" fontWeight={900} sx={{ opacity: 0.3 }}>NOT SCORED</Typography>
                         )}
                       </TableCell>
                       <TableCell align="right">
-                        <Button size="small" endIcon={<ChevronRight />} sx={{ fontWeight: 900 }}>
-                          {evalItem.status === 'Completed' ? 'Details' : 'Record'}
+                        <Button 
+                          component={Link}
+                          to={`/batches/${evalItem.batch?._id || evalItem.batch}?tab=2`}
+                          size="small" 
+                          endIcon={<ChevronRight />} 
+                          sx={{ fontWeight: 900 }}
+                        >
+                          {evalItem.status === 'passed' || evalItem.status === 'failed' ? 'Details' : 'Record'}
                         </Button>
                       </TableCell>
                     </TableRow>

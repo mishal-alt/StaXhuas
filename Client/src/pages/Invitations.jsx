@@ -22,8 +22,19 @@ import {
   ThemeProvider,
   createTheme,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  CircularProgress
 } from '@mui/material';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from "sonner";
+import * as invitationApi from '../api/invitations.api';
+import * as batchApi from '../api/batches.api';
 import { Link } from 'react-router-dom';
 import {
   Send,
@@ -90,15 +101,70 @@ const DUMMY_INVITES = [
 ];
 
 const Invitations = () => {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
+  const [open, setOpen] = useState(false);
+  const [inviteForm, setInviteForm] = useState({ name: '', email: '', batch: '' });
 
-  const paginatedInvites = DUMMY_INVITES.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-  const totalPages = Math.ceil(DUMMY_INVITES.length / itemsPerPage);
+  const { data: invitationsRes, isLoading: invitationsLoading } = useQuery({
+    queryKey: ['invitations'],
+    queryFn: () => invitationApi.getInvitations(),
+  });
+
+  const { data: batchesRes } = useQuery({
+    queryKey: ['batches'],
+    queryFn: batchApi.getBatches,
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: (data) => invitationApi.inviteStudent(data),
+    onSuccess: () => {
+      toast.success('Invitation sent successfully');
+      setOpen(false);
+      setInviteForm({ name: '', email: '', batch: '' });
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to send invitation');
+    }
+  });
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!inviteForm.email || !inviteForm.batch) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    inviteMutation.mutate({
+      email: inviteForm.email,
+      name: inviteForm.name,
+      batch: inviteForm.batch,
+      role: 'student'
+    });
+  };
+
+  const batches = batchesRes?.data || [];
+  const invitations = invitationsRes?.data || [];
+  const paginatedInvites = invitations.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.ceil(invitations.length / itemsPerPage);
 
   const handlePageChange = (event, value) => {
     setPage(value);
   };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return '#ed6c02';
+      case 'accepted': return '#2e7d32';
+      case 'expired': return '#d32f2f';
+      default: return '#666';
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <AppShell>
@@ -164,6 +230,7 @@ const Invitations = () => {
             <Button
               variant="contained"
               startIcon={<Send />}
+              onClick={handleOpen}
               sx={{
                 px: 4,
                 py: 1.5,
@@ -175,7 +242,87 @@ const Invitations = () => {
             </Button>
           </Box>
 
-          {/* KPI Grid - Strictly 4-column layout */}
+          {/* New Invite Dialog */}
+          <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 20px 60px rgba(0,0,0,0.1)' } }}>
+            <DialogTitle sx={{ 
+              fontWeight: 900, 
+              textTransform: 'uppercase', 
+              pt: 4, 
+              px: 4,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }}>
+              <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 1, borderRadius: 1.5, display: 'flex' }}>
+                <PersonAdd fontSize="small" />
+              </Box>
+              Send New Invitation
+            </DialogTitle>
+            <form onSubmit={handleSubmit}>
+              <DialogContent sx={{ px: 4, pb: 4 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontWeight: 500 }}>
+                  Enter student details below to send a secure invitation link to their email.
+                </Typography>
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Recipient Full Name"
+                    placeholder="e.g. John Doe"
+                    value={inviteForm.name}
+                    onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })}
+                    variant="outlined"
+                    InputProps={{ sx: { borderRadius: 2 } }}
+                  />
+                  <TextField
+                    fullWidth
+                    required
+                    label="Email Address"
+                    type="email"
+                    placeholder="student@staxhaus.com"
+                    value={inviteForm.email}
+                    onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                    variant="outlined"
+                    InputProps={{ sx: { borderRadius: 2 } }}
+                  />
+                  <TextField
+                    select
+                    fullWidth
+                    required
+                    label="Assign to Batch"
+                    value={inviteForm.batch}
+                    onChange={(e) => setInviteForm({ ...inviteForm, batch: e.target.value })}
+                    variant="outlined"
+                    InputProps={{ sx: { borderRadius: 2 } }}
+                  >
+                    {batches.map((batch) => (
+                      <MenuItem key={batch._id} value={batch._id}>
+                        {batch.name}
+                      </MenuItem>
+                    ))}
+                    {batches.length === 0 && (
+                      <MenuItem disabled>No active batches found</MenuItem>
+                    )}
+                  </TextField>
+                </Stack>
+              </DialogContent>
+              <DialogActions sx={{ p: 3, px: 4, borderTop: '1px solid #E5E7EB', bgcolor: '#F9FAFB' }}>
+                <Button onClick={handleClose} color="inherit" sx={{ fontWeight: 700 }}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={inviteMutation.isPending}
+                  startIcon={inviteMutation.isPending ? <CircularProgress size={20} color="inherit" /> : <Send />}
+                  sx={{ px: 4 }}
+                >
+                  {inviteMutation.isPending ? 'Processing...' : 'Send Invite'}
+                </Button>
+              </DialogActions>
+            </form>
+          </Dialog>
+
+          {/* KPI Grid */}
           <Box sx={{ 
             width: '100%',
             display: 'grid',
@@ -184,10 +331,10 @@ const Invitations = () => {
             mb: 2
           }}>
             {[
-              { label: 'Total Sent', value: '34', icon: <Mail />, color: '#1E2126' },
-              { label: 'Pending Invites', value: '08', icon: <Schedule />, color: '#E8391D' },
-              { label: 'Accepted (Month)', value: '24', icon: <CheckCircle />, color: '#2e7d32' },
-              { label: 'Expired Links', value: '02', icon: <History />, color: '#9e9e9e' },
+              { label: 'Total Sent', value: invitations.length, icon: <Mail />, color: '#1E2126' },
+              { label: 'Pending Invites', value: invitations.filter(i => i.status === 'pending').length, icon: <Schedule />, color: '#E8391D' },
+              { label: 'Accepted', value: invitations.filter(i => i.status === 'accepted').length, icon: <CheckCircle />, color: '#2e7d32' },
+              { label: 'Expired', value: invitations.filter(i => i.status === 'expired').length, icon: <History />, color: '#9e9e9e' },
             ].map((stat, i) => (
               <Card key={i} sx={{
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -249,7 +396,7 @@ const Invitations = () => {
                         lineHeight: 1
                       }}
                     >
-                      {stat.value}
+                      {stat.value.toString().padStart(2, '0')}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -271,41 +418,52 @@ const Invitations = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedInvites.map((invite) => (
-                    <TableRow key={invite.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                  {invitationsLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                        <CircularProgress size={40} />
+                        <Typography variant="body2" sx={{ mt: 2, fontWeight: 700, color: 'text.secondary' }}>Loading invitations...</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : paginatedInvites.map((invite) => (
+                    <TableRow key={invite._id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                       <TableCell sx={{ py: 3 }}>
                         <Stack direction="row" spacing={2} alignItems="center">
-                          <Box sx={{ width: 40, height: 40, bgcolor: 'primary.main', color: 'white', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
-                            {invite.name[0]}
+                          <Box sx={{ width: 40, height: 40, bgcolor: 'secondary.main', color: 'white', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                            {invite.name ? invite.name[0] : invite.email[0].toUpperCase()}
                           </Box>
                           <Box>
-                            <Typography variant="subtitle2" fontWeight={800}>{invite.name}</Typography>
+                            <Typography variant="subtitle2" fontWeight={800}>{invite.name || 'Student'}</Typography>
                             <Typography variant="caption" color="text.secondary">{invite.email}</Typography>
                           </Box>
                         </Stack>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={700} color="secondary">{invite.batch}</Typography>
+                        <Typography variant="body2" fontWeight={700} color="secondary">{invite.batch?.name || 'N/A'}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="caption" fontWeight={900} color="text.secondary">{invite.sentAt}</Typography>
+                        <Typography variant="caption" fontWeight={900} color="text.secondary">
+                          {new Date(invite.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Chip
-                          label={invite.status}
+                          label={invite.status.toUpperCase()}
                           size="small"
                           sx={{
                             fontWeight: 900,
-                            bgcolor: `${invite.color}20`,
-                            color: invite.color,
-                            border: `1px solid ${invite.color}40`
+                            fontSize: '0.65rem',
+                            bgcolor: `${getStatusColor(invite.status)}20`,
+                            color: getStatusColor(invite.status),
+                            border: `1px solid ${getStatusColor(invite.status)}40`,
+                            borderRadius: 1.5
                           }}
                         />
                       </TableCell>
                       <TableCell align="right">
-                        {invite.status !== 'Accepted' && (
+                        {invite.status !== 'accepted' && (
                           <Tooltip title="Resend Invitation">
-                            <Button size="small" variant="text" color="primary" startIcon={<Refresh />}>
+                            <Button size="small" variant="text" color="primary" startIcon={<Refresh />} sx={{ fontWeight: 800 }}>
                               Resend
                             </Button>
                           </Tooltip>
@@ -313,6 +471,13 @@ const Invitations = () => {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {!invitationsLoading && invitations.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: 'text.secondary' }}>No invitations found.</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

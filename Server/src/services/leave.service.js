@@ -22,13 +22,13 @@ export const createLeaveRequest = async (studentUser, data) => {
   }
 
   const config = batch.config;
-  
+
   // Calculate requested days (simplified: just difference in days)
   const start = new Date(startDate);
   start.setUTCHours(0, 0, 0, 0);
   const end = new Date(endDate);
   end.setUTCHours(0, 0, 0, 0);
-  
+
   const requestedDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
   // Check how many approved leaves student has
@@ -150,16 +150,22 @@ export const reviewLeaveRequest = async (facilitator, leaveId, data) => {
 
 export const getLeaveRequests = async (user, batchId = null) => {
   const query = {};
-  
+
   if (user.role === ROLES.STUDENT) {
     query.student = user._id;
   } else if (user.role === ROLES.FACILITATOR) {
-    if (!batchId) throw new ApiError(400, 'Batch ID is required for facilitators');
-    const batch = await Batch.findById(batchId);
-    if (!batch || batch.facilitator.toString() !== user._id.toString()) {
-       throw new ApiError(403, 'Not authorized');
+    if (batchId) {
+      const batch = await Batch.findById(batchId);
+      if (!batch || batch.facilitator.toString() !== user._id.toString()) {
+        throw new ApiError(403, 'Not authorized');
+      }
+      query.batch = batchId;
+    } else {
+      // Fetch all batches for this facilitator
+      const facilitatorBatches = await Batch.find({ facilitator: user._id });
+      const batchIds = facilitatorBatches.map(b => b._id);
+      query.batch = { $in: batchIds };
     }
-    query.batch = batchId;
   } else if (batchId) {
     query.batch = batchId;
   }

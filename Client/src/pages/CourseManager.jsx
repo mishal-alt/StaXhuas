@@ -127,7 +127,7 @@ const CourseManager = () => {
     },
     onSuccess: () => {
       toast.success(editingCourse ? 'Course updated' : 'Course created');
-      queryClient.invalidateQueries(['courses']);
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
       setShowCourseForm(false);
       setEditingCourse(null);
       resetCourse();
@@ -139,7 +139,7 @@ const CourseManager = () => {
     mutationFn: (id) => courseApi.deleteCourse(id),
     onSuccess: () => {
       toast.success('Course track deleted');
-      queryClient.invalidateQueries(['courses']);
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
       setSelectedCourse(null);
     },
     onError: (err) => toast.error(err.message || 'Delete failed'),
@@ -158,7 +158,7 @@ const CourseManager = () => {
     },
     onSuccess: () => {
       toast.success(editingModule ? 'Module updated' : 'Module created');
-      queryClient.invalidateQueries(['modules', selectedCourse?._id]);
+      queryClient.invalidateQueries({ queryKey: ['modules', selectedCourse?._id] });
       setShowModuleForm(false);
       setEditingModule(null);
       resetModule();
@@ -175,7 +175,7 @@ const CourseManager = () => {
     },
     onSuccess: () => {
       toast.success(editingTask ? 'Task updated' : 'Task created');
-      queryClient.invalidateQueries(['modules', selectedCourse?._id]);
+      queryClient.invalidateQueries({ queryKey: ['modules', selectedCourse?._id] });
       setShowTaskForm(false);
       setEditingTask(null);
       resetTask();
@@ -187,7 +187,7 @@ const CourseManager = () => {
     mutationFn: (id) => courseApi.deleteModule(id),
     onSuccess: () => {
       toast.success('Module deleted');
-      queryClient.invalidateQueries(['modules', selectedCourse?._id]);
+      queryClient.invalidateQueries({ queryKey: ['modules', selectedCourse?._id] });
     },
     onError: (err) => toast.error(err.message || 'Delete failed'),
   });
@@ -196,7 +196,7 @@ const CourseManager = () => {
     mutationFn: (id) => courseApi.deleteTask(id),
     onSuccess: () => {
       toast.success('Task deleted');
-      queryClient.invalidateQueries(['modules', selectedCourse?._id]);
+      queryClient.invalidateQueries({ queryKey: ['modules', selectedCourse?._id] });
     },
     onError: (err) => toast.error(err.message || 'Delete failed'),
   });
