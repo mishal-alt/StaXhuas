@@ -100,6 +100,107 @@ const seedDatabase = async () => {
       console.log(`Batch seeded: ${batchName} (Facilitator: ${facilitator.email})`);
     }
 
+    // 6. Seed multiple students in this batch
+    const studentsData = [
+      { name: 'Ahmed Khan', email: 'ahmed@staxhaus.com', password: 'password123', role: ROLES.STUDENT, batch: batch._id },
+      { name: 'Sara Ali', email: 'sara@staxhaus.com', password: 'password123', role: ROLES.STUDENT, batch: batch._id },
+      { name: 'Zaid Mirza', email: 'zaid@staxhaus.com', password: 'password123', role: ROLES.STUDENT, batch: batch._id },
+      { name: 'Fatima Noor', email: 'fatima@staxhaus.com', password: 'password123', role: ROLES.STUDENT, batch: batch._id },
+      { name: 'Umar Farooq', email: 'umar@staxhaus.com', password: 'password123', role: ROLES.STUDENT, batch: batch._id },
+    ];
+
+    const seededStudents = [];
+    for (const sData of studentsData) {
+      const student = await seedUser(sData);
+      seededStudents.push(student);
+    }
+
+    // 7. Seed Leave Requests for these students
+    const LeaveRequest = (await import('./src/models/LeaveRequest.js')).default;
+    
+    const leavesData = [
+      {
+        student: seededStudents[0]._id,
+        batch: batch._id,
+        facilitator: facilitator._id,
+        leaveType: 'sick',
+        reason: 'Running high fever. Doctor advised complete bed rest for 2 days.',
+        fromDate: new Date('2026-05-08'),
+        toDate: new Date('2026-05-09'),
+        totalDays: 2,
+        status: 'pending',
+        appliedAt: new Date('2026-05-07'),
+        priorityLevel: 'medium'
+      },
+      {
+        student: seededStudents[1]._id,
+        batch: batch._id,
+        facilitator: facilitator._id,
+        leaveType: 'casual',
+        reason: 'Family function attendance required.',
+        fromDate: new Date('2026-05-12'),
+        toDate: new Date('2026-05-12'),
+        totalDays: 1,
+        status: 'approved',
+        appliedAt: new Date('2026-05-10'),
+        approvedBy: facilitator._id,
+        approvedAt: new Date('2026-05-10'),
+        priorityLevel: 'low',
+        attendanceSynced: true
+      },
+      {
+        student: seededStudents[2]._id,
+        batch: batch._id,
+        facilitator: facilitator._id,
+        leaveType: 'emergency',
+        reason: 'Immediate family emergency requiring out-of-city travel.',
+        fromDate: new Date('2026-05-06'),
+        toDate: new Date('2026-05-07'),
+        totalDays: 2,
+        status: 'rejected',
+        appliedAt: new Date('2026-05-05'),
+        rejectedBy: facilitator._id,
+        rejectedAt: new Date('2026-05-05'),
+        remarks: 'Batch schedules cannot accommodate this absence without documentation.',
+        priorityLevel: 'high'
+      },
+      {
+        student: seededStudents[3]._id,
+        batch: batch._id,
+        facilitator: facilitator._id,
+        leaveType: 'sick',
+        reason: 'Scheduled dental surgery and recovery period.',
+        fromDate: new Date('2026-05-15'),
+        toDate: new Date('2026-05-16'),
+        totalDays: 2,
+        status: 'pending',
+        appliedAt: new Date('2026-05-13'),
+        priorityLevel: 'low'
+      },
+      {
+        student: seededStudents[4]._id,
+        batch: batch._id,
+        facilitator: facilitator._id,
+        leaveType: 'casual',
+        reason: 'Personal family obligation.',
+        fromDate: new Date('2026-05-20'),
+        toDate: new Date('2026-05-20'),
+        totalDays: 1,
+        status: 'pending',
+        appliedAt: new Date('2026-05-18'),
+        priorityLevel: 'low'
+      }
+    ];
+
+    await LeaveRequest.deleteMany({ batch: batch._id });
+    console.log('Old batch leaves deleted.');
+
+    for (const lData of leavesData) {
+      const leave = new LeaveRequest(lData);
+      await leave.save();
+      console.log(`Seeded ${lData.leaveType} leave for student: ${leave.student}`);
+    }
+
     console.log('\nSeeding completed successfully!');
     process.exit(0);
 

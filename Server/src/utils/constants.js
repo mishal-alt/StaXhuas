@@ -29,4 +29,13 @@ export const LEAVE_STATUS = {
   PENDING: 'pending',
   APPROVED: 'approved',
   REJECTED: 'rejected',
+  CANCELLED: 'cancelled',
+};
+
+export const LEAVE_TYPES = {
+  SICK: 'sick',
+  CASUAL: 'casual',
+  EMERGENCY: 'emergency',
+  PERSONAL: 'personal',
+  OTHER: 'other',
 };

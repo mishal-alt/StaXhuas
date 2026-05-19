@@ -107,7 +107,24 @@ import * as studentApi from '../api/students.api';
 import * as invitationApi from '../api/invitations.api';
 import * as interviewApi from '../api/interview.api.js';
 import * as usersApi from '../api/users.api.js';
+import * as attendanceApi from '../api/attendance.api.js';
+import * as scrumApi from '../api/scrum.api.js';
+import * as leaveApi from '../api/leaves.api.js';
 import { STUDENT_STATUS } from '../utils/constants';
+
+const STATUS_MAP = {
+  'P': 'present',
+  'A': 'absent',
+  'L': 'leave',
+  'H': 'half_day'
+};
+
+const REVERSE_STATUS_MAP = {
+  'present': 'P',
+  'absent': 'A',
+  'leave': 'L',
+  'half_day': 'H'
+};
 
 // Custom theme to match Staxhaus brand
 const theme = createTheme({
@@ -176,14 +193,79 @@ const BatchDetail = () => {
   const [attendanceMap, setAttendanceMap] = useState({});
   const [remarksMap, setRemarksMap] = useState({});
 
+  const { data: attendanceRes, isLoading: attendanceLoading } = useQuery({
+    queryKey: ['attendance', id, attendanceDate.toISOString().split('T')[0]],
+    queryFn: () => attendanceApi.getAttendanceForDate(id, attendanceDate.toISOString().split('T')[0]),
+    enabled: !!id,
+  });
+
+  const markSingleAttendanceMutation = useMutation({
+    mutationFn: (data) => attendanceApi.markSingleAttendance(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendance', id, attendanceDate.toISOString().split('T')[0]] });
+      toast.success('Attendance marked successfully');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Error marking attendance')
+  });
+
+  const bulkMarkAttendanceMutation = useMutation({
+    mutationFn: (data) => attendanceApi.bulkMarkAttendance(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendance', id, attendanceDate.toISOString().split('T')[0]] });
+      toast.success('Bulk attendance marked successfully');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Error marking bulk attendance')
+  });
+
+  React.useEffect(() => {
+    if (attendanceRes?.data) {
+      const newAttendanceMap = {};
+      const newRemarksMap = {};
+      attendanceRes.data.forEach(record => {
+        newAttendanceMap[record.student._id] = REVERSE_STATUS_MAP[record.status];
+        newRemarksMap[record.student._id] = record.remarks || '';
+      });
+      setAttendanceMap(newAttendanceMap);
+      setRemarksMap(newRemarksMap);
+    } else {
+      setAttendanceMap({});
+      setRemarksMap({});
+    }
+  }, [attendanceRes]);
+
   // Leaves state
-  const [mockLeaves, setMockLeaves] = useState([
-    { id: '1', studentName: 'Ahmed Khan', studentEmail: 'ahmed@example.com', type: 'Sick', fromDate: '2026-05-08', toDate: '2026-05-09', days: 2, reason: 'Running high fever. Doctor advised complete bed rest for 2 days.', status: 'Pending', appliedOn: '2026-05-07' },
-    { id: '2', studentName: 'Sara Ali', studentEmail: 'sara@example.com', type: 'Casual', fromDate: '2026-05-12', toDate: '2026-05-12', days: 1, reason: 'Family function attendance required.', status: 'Approved', appliedOn: '2026-05-10' },
-    { id: '3', studentName: 'Zaid Mirza', studentEmail: 'zaid@example.com', type: 'Emergency', fromDate: '2026-05-06', toDate: '2026-05-07', days: 2, reason: 'Immediate family emergency requiring out-of-city travel.', status: 'Rejected', appliedOn: '2026-05-05' },
-    { id: '4', studentName: 'Fatima Noor', studentEmail: 'fatima@example.com', type: 'Sick', fromDate: '2026-05-15', toDate: '2026-05-16', days: 2, reason: 'Scheduled dental surgery and recovery period.', status: 'Pending', appliedOn: '2026-05-13' },
-    { id: '5', studentName: 'Umar Farooq', studentEmail: 'umar@example.com', type: 'Casual', fromDate: '2026-05-20', toDate: '2026-05-20', days: 1, reason: 'Personal family obligation.', status: 'Pending', appliedOn: '2026-05-18' },
-  ]);
+  const { data: leavesRes, isLoading: leavesLoading } = useQuery({
+    queryKey: ['leaves', id],
+    queryFn: () => leaveApi.getLeaveRequests({ batch: id }),
+    enabled: !!id,
+  });
+
+  const approveLeaveMutation = useMutation({
+    mutationFn: (leaveId) => leaveApi.approveLeaveRequest({ id: leaveId, remarks: 'Approved from Batch Detail' }),
+    onSuccess: () => {
+      toast.success('Leave approved successfully');
+      queryClient.invalidateQueries({ queryKey: ['leaves', id] });
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Error approving leave')
+  });
+
+  const rejectLeaveMutation = useMutation({
+    mutationFn: (leaveId) => leaveApi.rejectLeaveRequest({ id: leaveId, remarks: 'Rejected from Batch Detail' }),
+    onSuccess: () => {
+      toast.success('Leave rejected successfully');
+      queryClient.invalidateQueries({ queryKey: ['leaves', id] });
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Error rejecting leave')
+  });
+
+  const cancelLeaveMutation = useMutation({
+    mutationFn: (leaveId) => leaveApi.cancelLeaveRequest({ id: leaveId, remarks: 'Cancelled' }),
+    onSuccess: () => {
+      toast.success('Leave cancelled successfully');
+      queryClient.invalidateQueries({ queryKey: ['leaves', id] });
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Error cancelling leave')
+  });
   const [leaveSearch, setLeaveSearch] = useState('');
   const [leaveStatusFilter, setLeaveStatusFilter] = useState('All');
   const [leaveTypeFilter, setLeaveTypeFilter] = useState('All');
@@ -192,9 +274,7 @@ const BatchDetail = () => {
   const [selectedLeaveDetail, setSelectedLeaveDetail] = useState(null);
 
   // Scrum Session State
-  const [scrumStatus, setScrumStatus] = useState('Not Started'); // 'Not Started' | 'In Progress' | 'Completed'
-  const [scrumStartTime, setScrumStartTime] = useState(null);
-  const [scrumData, setScrumData] = useState({}); // studentId -> { yesterday, today, blocker, blockerNote, notes, status }
+  const [localScrumEntries, setLocalScrumEntries] = useState([]); // Array of { studentId, isPresent, yesterdayProgress, todayPlan, blockers, blockerStatus, actionItems }
   const [scrumEditModal, setScrumEditModal] = useState({ open: false, studentId: null, field: null, title: '' });
 
   const { data: interviewsRes, isLoading: interviewsLoading } = useQuery({
@@ -320,44 +400,6 @@ const BatchDetail = () => {
     toast.success('Daily Scrum Session Completed');
   };
 
-  const formatDateKey = (date) => date.toISOString().split('T')[0];
-  const formatDisplayDate = (date) => date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-
-  const goToPrevDay = () => {
-    const d = new Date(attendanceDate);
-    d.setDate(d.getDate() - 1);
-    setAttendanceDate(d);
-  };
-  const goToNextDay = () => {
-    const d = new Date(attendanceDate);
-    d.setDate(d.getDate() + 1);
-    setAttendanceDate(d);
-  };
-  const goToToday = () => setAttendanceDate(new Date());
-
-  const markAll = (status) => {
-    const next = {};
-    (studentsRes?.data || []).forEach(s => { next[s._id] = status; });
-    setAttendanceMap(prev => ({ ...prev, ...next }));
-  };
-
-  const markStudent = (studentId, status) => {
-    setAttendanceMap(prev => ({ ...prev, [studentId]: status }));
-  };
-
-  const getAttendanceStatusColor = (status) => {
-    switch (status) {
-      case 'P': return { bg: 'rgba(46,125,50,0.08)', border: 'rgba(46,125,50,0.3)', text: '#2e7d32', label: 'Present' };
-      case 'A': return { bg: 'rgba(211,47,47,0.08)', border: 'rgba(211,47,47,0.3)', text: '#d32f2f', label: 'Absent' };
-      case 'L': return { bg: 'rgba(123,31,162,0.08)', border: 'rgba(123,31,162,0.3)', text: '#7b1fa2', label: 'Leave' };
-      case 'H': return { bg: 'rgba(230,81,0,0.08)', border: 'rgba(230,81,0,0.3)', text: '#e65100', label: 'Half Day' };
-      default: return { bg: 'transparent', border: 'transparent', text: 'text.secondary', label: '—' };
-    }
-  };
-
-  const handleSaveAttendance = () => {
-    toast.success(`Attendance saved for ${formatDisplayDate(attendanceDate)}`);
-  };
 
   // Leave helpers
   const getLeaveStatusStyle = (status) => {
@@ -378,9 +420,10 @@ const BatchDetail = () => {
   };
 
   const handleLeaveAction = (leaveId, newStatus) => {
-    setMockLeaves(prev => prev.map(l => l.id === leaveId ? { ...l, status: newStatus } : l));
-    toast.success(`Leave ${newStatus.toLowerCase()} successfully`);
-    if (selectedLeaveDetail?.id === leaveId) setSelectedLeaveDetail(prev => ({ ...prev, status: newStatus }));
+    if (newStatus === 'approved') approveLeaveMutation.mutate(leaveId);
+    else if (newStatus === 'rejected') rejectLeaveMutation.mutate(leaveId);
+    else if (newStatus === 'cancelled') cancelLeaveMutation.mutate(leaveId);
+    if (selectedLeaveDetail?._id === leaveId) setSelectedLeaveDetail(prev => ({ ...prev, status: newStatus }));
   };
 
   const toggleLeaveSelection = (id) => {
@@ -388,8 +431,10 @@ const BatchDetail = () => {
   };
 
   const bulkLeaveAction = (newStatus) => {
-    setMockLeaves(prev => prev.map(l => selectedLeaves.includes(l.id) ? { ...l, status: newStatus } : l));
-    toast.success(`${selectedLeaves.length} leave(s) ${newStatus.toLowerCase()}`);
+    selectedLeaves.forEach(leaveId => {
+      if (newStatus === 'Approved') approveLeaveMutation.mutate(leaveId);
+      if (newStatus === 'Rejected') rejectLeaveMutation.mutate(leaveId);
+    });
     setSelectedLeaves([]);
   };
 
@@ -442,26 +487,30 @@ const BatchDetail = () => {
   const belowThreshold = students.filter(s => attendanceMap[s._id] === 'A');
 
   // Derived leaves data
-  const filteredLeaves = mockLeaves.filter(l => {
+  const leaveDataArray = leavesRes?.data || [];
+  
+  const filteredLeaves = leaveDataArray.filter(l => {
     const q = leaveSearch.toLowerCase();
-    const matchesSearch = l.studentName.toLowerCase().includes(q) || l.studentEmail.toLowerCase().includes(q);
-    const matchesStatus = leaveStatusFilter === 'All' || l.status === leaveStatusFilter;
-    const matchesType = leaveTypeFilter === 'All' || l.type === leaveTypeFilter;
+    const studentName = l.student?.name || '';
+    const studentEmail = l.student?.email || '';
+    const matchesSearch = studentName.toLowerCase().includes(q) || studentEmail.toLowerCase().includes(q);
+    const matchesStatus = leaveStatusFilter === 'All' || l.status === leaveStatusFilter.toLowerCase();
+    const matchesType = leaveTypeFilter === 'All' || l.leaveType === leaveTypeFilter.toLowerCase();
     return matchesSearch && matchesStatus && matchesType;
   });
 
   const leaveKPIs = [
-    { label: 'Total This Month', value: mockLeaves.length, color: '#1E2126', icon: <EventBusy sx={{ fontSize: 22 }} /> },
-    { label: 'Pending', value: mockLeaves.filter(l => l.status === 'Pending').length, color: '#e65100', icon: <HourglassEmpty sx={{ fontSize: 22 }} /> },
-    { label: 'Approved', value: mockLeaves.filter(l => l.status === 'Approved').length, color: '#2e7d32', icon: <CheckCircleOutlined sx={{ fontSize: 22 }} /> },
-    { label: 'Rejected', value: mockLeaves.filter(l => l.status === 'Rejected').length, color: '#d32f2f', icon: <Cancel sx={{ fontSize: 22 }} /> },
+    { label: 'Total This Month', value: leaveDataArray.length, color: '#1E2126', icon: <EventBusy sx={{ fontSize: 22 }} /> },
+    { label: 'Pending', value: leaveDataArray.filter(l => l.status === 'pending').length, color: '#e65100', icon: <HourglassEmpty sx={{ fontSize: 22 }} /> },
+    { label: 'Approved', value: leaveDataArray.filter(l => l.status === 'approved').length, color: '#2e7d32', icon: <CheckCircleOutlined sx={{ fontSize: 22 }} /> },
+    { label: 'Rejected', value: leaveDataArray.filter(l => l.status === 'rejected').length, color: '#d32f2f', icon: <Cancel sx={{ fontSize: 22 }} /> },
   ];
 
   const scrumKPIs = [
     { label: 'Present', value: attendanceCounts.present, icon: <CheckCircle />, color: '#2e7d32' },
     { label: 'Absent', value: attendanceCounts.absent, icon: <RadioButtonUnchecked />, color: '#d32f2f' },
     { label: 'On Leave', value: attendanceCounts.leave, icon: <HourglassEmpty />, color: '#7b1fa2' },
-    { label: 'Blocked', value: Object.values(scrumData).filter(d => d.blocker !== 'No Issues').length, icon: <Block />, color: '#E8391D' },
+    { label: 'Blocked', value: localScrumEntries.filter(d => d.blockerStatus && d.blockerStatus !== 'None').length, icon: <Block />, color: '#E8391D' },
   ];
 
   const interviews = Array.isArray(interviewsRes) ? interviewsRes : (interviewsRes?.data?.data || interviewsRes?.data || []);
@@ -497,6 +546,78 @@ const BatchDetail = () => {
       default: return 'default';
     }
   };
+
+  const markStudent = (studentId, code) => {
+    if (!code) return; // Ignore if unmarking
+    const status = STATUS_MAP[code];
+    if (status) {
+      // Optimistic update
+      setAttendanceMap(prev => ({ ...prev, [studentId]: code }));
+      markSingleAttendanceMutation.mutate({
+        batchId: id,
+        studentId,
+        date: attendanceDate.toISOString(),
+        status,
+        remarks: remarksMap[studentId] || ''
+      });
+    }
+  };
+
+  const markAll = (code) => {
+    const status = STATUS_MAP[code];
+    if (status) {
+      const records = students.map(s => ({
+        studentId: s._id,
+        status,
+        remarks: remarksMap[s._id] || ''
+      }));
+      // Optimistic update
+      const newMap = {};
+      students.forEach(s => newMap[s._id] = code);
+      setAttendanceMap(prev => ({ ...prev, ...newMap }));
+      
+      bulkMarkAttendanceMutation.mutate({
+        batchId: id,
+        date: attendanceDate.toISOString(),
+        attendanceRecords: records
+      });
+    }
+  };
+
+  const handleRemarkBlur = (studentId) => {
+    const statusCode = attendanceMap[studentId];
+    if (statusCode) {
+      const status = STATUS_MAP[statusCode];
+      markSingleAttendanceMutation.mutate({
+        batchId: id,
+        studentId,
+        date: attendanceDate.toISOString(),
+        status,
+        remarks: remarksMap[studentId] || ''
+      });
+    } else if (remarksMap[studentId]) {
+       // If there's a remark but no status, we could enforce a status or default to present
+       toast.warning("Please mark attendance status before saving remarks.");
+    }
+  };
+
+  const getAttendanceStatusColor = (status) => {
+    switch (status) {
+      case 'P': return { label: 'PRESENT', bg: '#e8f5e9', text: '#2e7d32', border: '#a5d6a7' };
+      case 'A': return { label: 'ABSENT', bg: '#ffebee', text: '#c62828', border: '#ef9a9a' };
+      case 'L': return { label: 'LEAVE', bg: '#f3e5f5', text: '#6a1b9a', border: '#ce93d8' };
+      case 'H': return { label: 'HALF DAY', bg: '#fff3e0', text: '#ef6c00', border: '#ffcc80' };
+      default: return { label: 'NOT MARKED', bg: 'transparent', text: 'text.disabled', border: 'transparent' };
+    }
+  };
+
+  const formatDisplayDate = (date) => {
+    return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(date);
+  };
+
+  const goToPrevDay = () => setAttendanceDate(prev => new Date(prev.setDate(prev.getDate() - 1)));
+  const goToNextDay = () => setAttendanceDate(prev => new Date(prev.setDate(prev.getDate() + 1)));
+  const goToToday = () => setAttendanceDate(new Date());
 
   return (
     <ThemeProvider theme={theme}>
@@ -845,8 +966,8 @@ const BatchDetail = () => {
                     </Stack>
 
                     {/* Scrum Status Toggle */}
-                    <Box
-                      onClick={() => setScrumCompleted(prev => !prev)}
+                      <Box
+                        onClick={() => setScrumCompleted(prev => !prev)}
                       sx={{
                         display: 'flex', alignItems: 'center', gap: 1.5,
                         px: 2.5, py: 1, borderRadius: '10px',
@@ -1012,6 +1133,7 @@ const BatchDetail = () => {
                                 placeholder="Optional remark..."
                                 value={remarksMap[student._id] || ''}
                                 onChange={e => setRemarksMap(prev => ({ ...prev, [student._id]: e.target.value }))}
+                                onBlur={() => handleRemarkBlur(student._id)}
                                 InputProps={{ sx: { borderRadius: 2, fontSize: '0.8rem', bgcolor: 'rgba(255,255,255,0.8)' } }}
                                 sx={{ width: '100%' }}
                               />
@@ -1031,24 +1153,7 @@ const BatchDetail = () => {
                 </TableContainer>
               </Card>
 
-              {/* Save Button */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  startIcon={<Save />}
-                  onClick={handleSaveAttendance}
-                  sx={{
-                    borderRadius: 2, px: 5, py: 1.5,
-                    fontWeight: 900, fontSize: '0.9rem',
-                    boxShadow: '0 6px 20px rgba(232,57,29,0.35)',
-                    '&:hover': { boxShadow: '0 8px 28px rgba(232,57,29,0.5)' }
-                  }}
-                >
-                  Save Attendance
-                </Button>
-              </Box>
+
 
             </Box>
 
@@ -1113,7 +1218,7 @@ const BatchDetail = () => {
                             size="small"
                             indeterminate={selectedLeaves.length > 0 && selectedLeaves.length < filteredLeaves.length}
                             checked={filteredLeaves.length > 0 && selectedLeaves.length === filteredLeaves.length}
-                            onChange={e => setSelectedLeaves(e.target.checked ? filteredLeaves.map(l => l.id) : [])}
+                            onChange={e => setSelectedLeaves(e.target.checked ? filteredLeaves.map(l => l._id) : [])}
                           />
                         </TableCell>
                         {['Student', 'Type', 'From', 'To', 'Days', 'Reason', 'Status', 'Applied On', 'Actions'].map(h => (
@@ -1123,38 +1228,38 @@ const BatchDetail = () => {
                     </TableHead>
                     <TableBody>
                       {filteredLeaves.map((leave) => {
-                        const ss = getLeaveStatusStyle(leave.status);
-                        const ts = getLeaveTypeStyle(leave.type);
-                        const isSelected = selectedLeaves.includes(leave.id);
+                        const ss = getLeaveStatusStyle(leave.status.charAt(0).toUpperCase() + leave.status.slice(1));
+                        const ts = getLeaveTypeStyle(leave.leaveType.charAt(0).toUpperCase() + leave.leaveType.slice(1));
+                        const isSelected = selectedLeaves.includes(leave._id);
                         return (
-                          <TableRow key={leave.id} sx={{ bgcolor: isSelected ? 'rgba(232,57,29,0.03)' : 'transparent', '&:hover': { bgcolor: 'rgba(247,247,245,0.9)' }, transition: 'background 0.15s' }}>
+                          <TableRow key={leave._id} sx={{ bgcolor: isSelected ? 'rgba(232,57,29,0.03)' : 'transparent', '&:hover': { bgcolor: 'rgba(247,247,245,0.9)' }, transition: 'background 0.15s' }}>
                             <TableCell padding="checkbox" sx={{ pl: 2 }}>
-                              <Checkbox size="small" checked={isSelected} onChange={() => toggleLeaveSelection(leave.id)} />
+                              <Checkbox size="small" checked={isSelected} onChange={() => toggleLeaveSelection(leave._id)} />
                             </TableCell>
                             <TableCell sx={{ py: 2 }}>
                               <Stack direction="row" spacing={1.5} alignItems="center">
-                                <Avatar sx={{ bgcolor: 'secondary.main', borderRadius: 2, width: 34, height: 34, fontSize: '0.85rem', fontWeight: 900 }}>{leave.studentName[0]}</Avatar>
+                                <Avatar sx={{ bgcolor: 'secondary.main', borderRadius: 2, width: 34, height: 34, fontSize: '0.85rem', fontWeight: 900 }}>{(leave.student?.name || '?')[0]}</Avatar>
                                 <Box>
-                                  <Typography variant="subtitle2" fontWeight={800} color="secondary" sx={{ lineHeight: 1.2 }}>{leave.studentName}</Typography>
-                                  <Typography variant="caption" color="text.secondary">{leave.studentEmail}</Typography>
+                                  <Typography variant="subtitle2" fontWeight={800} color="secondary" sx={{ lineHeight: 1.2 }}>{leave.student?.name}</Typography>
+                                  <Typography variant="caption" color="text.secondary">{leave.student?.email}</Typography>
                                 </Box>
                               </Stack>
                             </TableCell>
                             <TableCell>
-                              <Chip label={leave.type} size="small" sx={{ fontWeight: 800, fontSize: '0.65rem', bgcolor: ts.bg, color: ts.color, borderRadius: 1.5, height: 22 }} />
+                              <Chip label={leave.leaveType.charAt(0).toUpperCase() + leave.leaveType.slice(1)} size="small" sx={{ fontWeight: 800, fontSize: '0.65rem', bgcolor: ts.bg, color: ts.color, borderRadius: 1.5, height: 22 }} />
                             </TableCell>
-                            <TableCell><Typography variant="body2" fontWeight={700}>{leave.fromDate}</Typography></TableCell>
-                            <TableCell><Typography variant="body2" fontWeight={700}>{leave.toDate}</Typography></TableCell>
+                            <TableCell><Typography variant="body2" fontWeight={700}>{formatDisplayDate(new Date(leave.fromDate))}</Typography></TableCell>
+                            <TableCell><Typography variant="body2" fontWeight={700}>{formatDisplayDate(new Date(leave.toDate))}</Typography></TableCell>
                             <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.06)', fontWeight: 900, fontSize: '0.8rem', color: 'secondary.main' }}>{leave.days}</Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.06)', fontWeight: 900, fontSize: '0.8rem', color: 'secondary.main' }}>{leave.totalDays}</Box>
                             </TableCell>
                             <TableCell sx={{ maxWidth: 160 }}>
                               <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 150 }}>{leave.reason}</Typography>
                             </TableCell>
                             <TableCell>
-                              <Chip label={leave.status} size="small" sx={{ fontWeight: 900, fontSize: '0.65rem', bgcolor: ss.bg, color: ss.color, border: `1px solid ${ss.border}`, borderRadius: 1.5, height: 22 }} />
+                              <Chip label={leave.status.charAt(0).toUpperCase() + leave.status.slice(1)} size="small" sx={{ fontWeight: 900, fontSize: '0.65rem', bgcolor: ss.bg, color: ss.color, border: `1px solid ${ss.border}`, borderRadius: 1.5, height: 22 }} />
                             </TableCell>
-                            <TableCell><Typography variant="body2" color="text.secondary" fontWeight={600}>{leave.appliedOn}</Typography></TableCell>
+                            <TableCell><Typography variant="body2" color="text.secondary" fontWeight={600}>{formatDisplayDate(new Date(leave.appliedAt))}</Typography></TableCell>
                             <TableCell>
                               <Stack direction="row" spacing={0.5}>
                                 <Tooltip title="View Details">
@@ -1162,15 +1267,15 @@ const BatchDetail = () => {
                                     <Visibility sx={{ fontSize: 17 }} />
                                   </IconButton>
                                 </Tooltip>
-                                {leave.status === 'Pending' && (
+                                {leave.status === 'pending' && (
                                   <>
                                     <Tooltip title="Approve">
-                                      <IconButton size="small" onClick={() => handleLeaveAction(leave.id, 'Approved')} sx={{ color: '#2e7d32', '&:hover': { bgcolor: 'rgba(46,125,50,0.1)' } }}>
+                                      <IconButton size="small" onClick={() => handleLeaveAction(leave._id, 'approved')} sx={{ color: '#2e7d32', '&:hover': { bgcolor: 'rgba(46,125,50,0.1)' } }}>
                                         <CheckCircleOutlined sx={{ fontSize: 17 }} />
                                       </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Reject">
-                                      <IconButton size="small" onClick={() => handleLeaveAction(leave.id, 'Rejected')} sx={{ color: '#d32f2f', '&:hover': { bgcolor: 'rgba(211,47,47,0.1)' } }}>
+                                      <IconButton size="small" onClick={() => handleLeaveAction(leave._id, 'rejected')} sx={{ color: '#d32f2f', '&:hover': { bgcolor: 'rgba(211,47,47,0.1)' } }}>
                                         <Cancel sx={{ fontSize: 17 }} />
                                       </IconButton>
                                     </Tooltip>

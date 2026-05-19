@@ -1,35 +1,48 @@
 import express from 'express';
 import * as leaveController from '../controllers/leave.controller.js';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/role.middleware.js';
+import { protect, restrictTo } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
+import * as leaveValidator from '../validators/leave.validator.js';
 import { ROLES } from '../utils/constants.js';
-import { createLeaveSchema, reviewLeaveSchema } from '../validators/leave.validator.js';
 
 const router = express.Router();
 
-router.use(authMiddleware);
+router.use(protect);
 
-// Students can raise leaves
-router.post(
-  '/',
-  requireRole(ROLES.STUDENT),
-  validate(createLeaveSchema),
-  leaveController.createLeave
-);
+router
+  .route('/')
+  .get(
+    validate(leaveValidator.getLeavesSchema, 'query'),
+    leaveController.getLeaveRequests
+  )
+  .post(
+    restrictTo(ROLES.STUDENT, ROLES.FACILITATOR, ROLES.ADMIN),
+    validate(leaveValidator.createLeaveSchema),
+    leaveController.createLeaveRequest
+  );
 
-// Facilitators/Admins can review
+router.get('/student/:studentId', leaveController.getStudentLeaveHistory);
+router.get('/analytics/:batchId', leaveController.getLeaveAnalytics);
+
+// Approval workflows (Facilitators & Admins)
+router.use(restrictTo(ROLES.FACILITATOR, ROLES.ADMIN));
+
 router.patch(
-  '/:id/review',
-  requireRole(ROLES.ADMIN, ROLES.FACILITATOR),
-  validate(reviewLeaveSchema),
-  leaveController.reviewLeave
+  '/:id/approve',
+  validate(leaveValidator.reviewLeaveSchema),
+  leaveController.approveLeaveRequest
 );
 
-// Everyone can view leaves (Service handles filtering by role)
-router.get(
-  '/',
-  leaveController.getLeaves
+router.patch(
+  '/:id/reject',
+  validate(leaveValidator.reviewLeaveSchema),
+  leaveController.rejectLeaveRequest
+);
+
+router.patch(
+  '/:id/cancel',
+  validate(leaveValidator.reviewLeaveSchema),
+  leaveController.cancelLeaveRequest
 );
 
 export default router;
